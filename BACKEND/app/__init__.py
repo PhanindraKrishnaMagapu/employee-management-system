@@ -1,21 +1,37 @@
-"""Flask application factory.
 
-Phase 1 creates the application and loads settings.
-Later phases register REST blueprints here. No business routes are
-registered yet, and this module does not open the database.
-"""
+"""Flask application factory for Employee Management System."""
 
-from flask import Flask
+from flask import Flask, jsonify
 
 from app.config import Config
+from app.routes.health import health_bp
+from app.routes.auth import auth_bp
 
 
 def create_app(config_class=Config):
-    """Build and return the Flask application."""
+    """Create and configure the Flask application."""
+
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Employee, auth, organization, and other blueprints will be registered
-    # in later phases. Phase 1 leaves the URL map empty on purpose.
+    # Register API blueprints
+    app.register_blueprint(health_bp, url_prefix="/api")
+    app.register_blueprint(auth_bp, url_prefix="/api")
+
+    # Handle unknown API routes
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "message": "Resource not found"
+        }), 404
+
+    # Handle unexpected server errors
+    @app.errorhandler(500)
+    def internal_error(error):
+        return jsonify({
+            "success": False,
+            "message": "Internal server error"
+        }), 500
 
     return app
