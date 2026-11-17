@@ -1,0 +1,5 @@
+-- Development seed data
+--
+-- Phase 2 will insert fake departments, employees, and users.
+-- Do not put real employee or salary data in this file.
+-- Phase 1 inserts nothing.

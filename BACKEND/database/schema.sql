@@ -1,0 +1,7 @@
+-- Employee Management System schema
+--
+-- Phase 2 will add CREATE TABLE statements here.
+-- Phase 1 defines no tables, indexes, or seed data.
+--
+-- The live SQLite file (database/ems.sqlite) is created locally and is
+-- ignored by Git. This SQL file stays in the repository.

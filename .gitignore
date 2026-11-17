@@ -10,3 +10,12 @@ __pycache__/
 venv/
 .DS_Store
 Thumbs.db
+
+# Local SQLite databases and their temporary sidecar files.
+# schema.sql and seed.sql stay in Git. The database file does not.
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
