@@ -1,0 +1,8 @@
+# Install from the BACKEND folder:
+#   python -m venv venv
+#   .\venv\Scripts\Activate.ps1
+#   pip install -r requirements.txt
+
+Flask>=3.0.3,<4
+pytest>=8.3.0,<9
+waitress>=3.0.2,<4
