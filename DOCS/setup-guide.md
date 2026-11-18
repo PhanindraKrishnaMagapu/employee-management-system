@@ -110,15 +110,39 @@ To create tables without inserting demo data:
 python -m app.db init --no-seed
 ```
 
+### Demo account passwords (development only)
+
+The seed script writes deliberately unusable placeholder hashes. To make the seven fictional demo accounts loggable, run:
+
+```powershell
+python -m app.db demo-passwords
+```
+
+The command asks for the password twice using a hidden interactive prompt. It never prints the password or a hash, and it never stores a password in the repository.
+
+- Accounts that already have a valid hash are preserved. Use `--force` only when you deliberately want to replace them.
+- Only the seven exact demo usernames are changed. No employee, role, or other data is touched.
+- The command refuses to run when `FLASK_ENV=production`.
+- After writing, it verifies authentication for every account it updated.
+
+For automation only, read the password from a shell environment variable and confirm with `--yes`:
+
+```powershell
+$env:EMS_DEMO_PASSWORD = "<choose-a-fictional-demo-password>"
+python -m app.db demo-passwords --password-env EMS_DEMO_PASSWORD --yes
+```
+
+Do not commit that value, and never use a real employee password.
+
 ## 6. Run Automated Database Tests
 
 From the `BACKEND` directory:
 
 ```powershell
-python -m pytest tests/test_schema.py -v
+python -m pytest tests/ -v
 ```
 
-The current Phase 2 test suite checks:
+The test suite checks:
 
 1. All 15 tables are created.
 2. Foreign keys are enabled.
@@ -126,10 +150,11 @@ The current Phase 2 test suite checks:
 4. Duplicate employee codes are rejected.
 5. Salary records require an existing employee.
 6. Repeated initialization does not duplicate demo records.
+7. Demo password provisioning, hash preservation, `--force`, production refusal, rollback, and authentication verification.
 
-Latest verified result: **6 passed, 0 failed.**
+Latest verified result: **16 passed, 0 failed.**
 
-Tests use temporary databases and do not modify the local development database.
+Tests use temporary databases and do not modify the local development database. If pytest cannot access its default temporary folder, pass `--basetemp` with a writable path, for example `python -m pytest tests/ -v --basetemp C:\Temp\pytest-ems`.
 
 ## 7. Start the Flask Application
 
@@ -147,7 +172,7 @@ http://127.0.0.1:5000
 
 Stop the server using `Ctrl + C`.
 
-Employee and authentication API endpoints will be implemented in later phases.
+Authentication endpoints are available at `/api/auth/login`, `/api/auth/logout`, and `/api/auth/me`. Employee endpoints are planned for a later phase.
 
 ## 8. Frontend
 

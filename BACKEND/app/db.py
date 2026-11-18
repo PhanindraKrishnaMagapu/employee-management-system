@@ -1,17 +1,32 @@
-
 """SQLite database connection and initialization utilities."""
 
 import argparse
+import getpass
+import os
 import sqlite3
 import sys
 from pathlib import Path
 
-from app.config import Config
+from app.config import Config, is_production
 
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 SCHEMA_FILE = BACKEND_DIR / "database" / "schema.sql"
 SEED_FILE = BACKEND_DIR / "database" / "seed.sql"
+
+# Exact fictional demo accounts managed by the development-only password tool.
+DEMO_USERNAMES = (
+    "demo_ceo",
+    "demo_hr_admin",
+    "demo_hr_exec",
+    "demo_dept_manager",
+    "demo_project_manager",
+    "demo_employee",
+    "demo_sysadmin",
+)
+
+# Sentinel written by seed.sql. It is not a password and cannot authenticate.
+PLACEHOLDER_PASSWORD_HASH = "NOT_A_REAL_PASSWORD_HASH"
 
 
 def get_database_path():
@@ -60,28 +75,160 @@ def initialize_database(seed=True):
         connection.close()
 
 
+def is_valid_password_hash(value):
+    """Return True when a stored value looks like an existing password hash.
+
+    Conservative on purpose: anything that is not the seed placeholder and
+    contains the separators used by Werkzeug hashes is treated as an existing
+    hash, so real hashes are never overwritten by accident.
+    """
+    if not isinstance(value, str) or not value or value == PLACEHOLDER_PASSWORD_HASH:
+        return False
+    return value.count("$") >= 2
+
+
+def provision_demo_passwords(password, *, force=False):
+    """Provision demo passwords for the seven fictional demo accounts.
+
+    Development-only. Existing valid hashes are preserved unless force is
+    True. Returns a summary of updated, skipped and missing usernames.
+    """
+    if is_production():
+        raise RuntimeError("Refusing to provision demo passwords in production")
+    if not isinstance(password, str) or not password:
+        raise ValueError("A non-empty demo password is required")
+
+    # Imported lazily: app.services.auth imports get_connection from this module.
+    from app.services.auth import authenticate_user, hash_password
+
+    connection = get_connection()
+    updated = []
+    skipped = []
+    missing = []
+
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+
+        placeholders = ", ".join("?" for _ in DEMO_USERNAMES)
+        rows = connection.execute(
+            f"SELECT id, username, password_hash FROM users "
+            f"WHERE username IN ({placeholders}) ORDER BY id",
+            DEMO_USERNAMES,
+        ).fetchall()
+        by_username = {row["username"]: row for row in rows}
+
+        for username in DEMO_USERNAMES:
+            row = by_username.get(username)
+            if row is None:
+                missing.append(username)
+                continue
+            if is_valid_password_hash(row["password_hash"]) and not force:
+                skipped.append(username)
+                continue
+
+            cursor = connection.execute(
+                "UPDATE users SET password_hash = ?, "
+                "updated_at = CURRENT_TIMESTAMP WHERE id = ? AND username = ?",
+                (hash_password(password), row["id"], username),
+            )
+            if cursor.rowcount != 1:
+                raise RuntimeError(
+                    f"Unexpected update result for demo account: {username}"
+                )
+            updated.append(username)
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+    # End-to-end verification with a fresh connection after the commit.
+    for username in updated:
+        if not authenticate_user(username, password):
+            raise RuntimeError(
+                "Post-provisioning authentication verification failed for: "
+                f"{username}"
+            )
+
+    return {"updated": updated, "skipped": skipped, "missing": missing}
+
+
+def _read_demo_password(args):
+    """Read the demo password without storing it in any project file."""
+    if args.password_env:
+        if not args.yes:
+            raise ValueError("Non-interactive password input requires --yes")
+        value = os.environ.get(args.password_env)
+        if not value:
+            raise ValueError(f"Environment variable is not set: {args.password_env}")
+        return value
+
+    first = getpass.getpass("Demo password for fictional accounts: ")
+    second = getpass.getpass("Confirm demo password: ")
+    if first != second:
+        raise ValueError("Entered passwords do not match")
+    return first
+
+
 def main():
     """Run database commands from the terminal."""
     parser = argparse.ArgumentParser(description="Employee Management System database")
     parser.add_argument(
         "command",
-        choices=["init"],
-        help="Initialize database tables and development seed data",
+        choices=["init", "demo-passwords"],
+        help="Initialize the database or provision development demo passwords",
     )
     parser.add_argument(
         "--no-seed",
         action="store_true",
         help="Create tables without inserting sample data",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Replace existing demo password hashes (default: preserve them)",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Confirm non-interactive password input from --password-env",
+    )
+    parser.add_argument(
+        "--password-env",
+        metavar="NAME",
+        help="Read the demo password from this environment variable (requires --yes)",
+    )
 
     args = parser.parse_args()
 
-    try:
-        if args.command == "init":
+    if args.command == "init":
+        try:
             initialize_database(seed=not args.no_seed)
-    except (sqlite3.Error, OSError, ValueError) as error:
-        print(f"Database initialization failed: {error}", file=sys.stderr)
+        except (sqlite3.Error, OSError, ValueError) as error:
+            print(f"Database initialization failed: {error}", file=sys.stderr)
+            raise SystemExit(1) from error
+        return
+
+    try:
+        password = _read_demo_password(args)
+        summary = provision_demo_passwords(password, force=args.force)
+    except (sqlite3.Error, OSError, ValueError, RuntimeError) as error:
+        print(f"Demo password provisioning failed: {error}", file=sys.stderr)
         raise SystemExit(1) from error
+
+    print(f"Provisioned demo passwords for {len(summary['updated'])} account(s).")
+    if summary["skipped"]:
+        print(
+            f"Skipped {len(summary['skipped'])} account(s) with existing hashes; "
+            "use --force to replace them."
+        )
+    if summary["missing"]:
+        print(f"Warning: {len(summary['missing'])} demo account(s) were not found.")
+    if summary["updated"]:
+        print("Authentication verification passed for all updated accounts.")
 
 
 if __name__ == "__main__":

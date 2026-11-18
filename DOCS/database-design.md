@@ -75,7 +75,7 @@ The development seed file inserts fictional sample records:
 
 Seed operations use `INSERT OR IGNORE` to avoid duplicate sample records when initialization is repeated.
 
-The sample password hashes are temporary unusable placeholders. Authentication and proper password hashing will be implemented in the authentication phase.
+The seed file writes deliberately unusable placeholder hashes for the seven demo users. A development-only command, `python -m app.db demo-passwords`, replaces only those placeholders with Werkzeug hashes supplied interactively. It preserves existing valid hashes unless `--force` is given, refuses to run in production, and never writes a password to the repository. See `setup-guide.md`.
 
 Only fictional development data should be used.
 

@@ -27,6 +27,14 @@ def _database_path():
     return str(path)
 
 
+def is_production():
+    """Return True when the environment is explicitly marked as production.
+
+    Read at call time so shell changes and test monkeypatching are respected.
+    """
+    return os.environ.get("FLASK_ENV", "development").strip().lower() == "production"
+
+
 class Config:
     """Settings for the local Employee Management System."""
 
