@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    employee_id INTEGER REFERENCES employees(id),
     is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -205,6 +206,10 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (actor_user_id) REFERENCES users(id)
 );
+
+-- One employee record may be linked to at most one user account.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_employee_id
+    ON users(employee_id);
 
 CREATE INDEX IF NOT EXISTS idx_employees_department
     ON employees(department_id);

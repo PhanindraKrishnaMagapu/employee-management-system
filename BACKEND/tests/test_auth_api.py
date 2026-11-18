@@ -273,11 +273,14 @@ def test_logout_clears_session_and_blocks_me(logged_in_client):
     assert logged_in_client.get("/api/auth/me").status_code == 401
 
 
-def test_logout_without_session_is_idempotent(client):
+def test_logout_without_session_is_rejected(client):
     response = client.post("/api/auth/logout")
 
-    assert response.status_code == 200
-    assert response.get_json() == {"success": True, "message": "Logout successful"}
+    assert response.status_code == 401
+    assert response.get_json() == {
+        "success": False,
+        "message": "Authentication required",
+    }
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,8 @@
 # Architecture
 
-Phase 1 establishes how the Employee Management System is split. It does not define database tables, REST resources, or login.
+This document describes how the Employee Management System is split. The
+database, health API, authentication API, and RBAC foundation are implemented;
+employee and other business APIs are still to be added.
 
 The product scope remains in [MASTER_SOW.md](../MASTER_SOW.md).
 
@@ -25,7 +27,7 @@ Browser (UI/)
         v
 Flask REST API (BACKEND/)
   app/routes        URLs and HTTP methods
-  app/auth          login and role checks (Phase 6)
+  app/auth          permission map, per-request user context, decorators
   app/services      business rules
   app/models        SQL queries
         |
@@ -34,7 +36,16 @@ SQLite file
   BACKEND/database/ems.sqlite
 ```
 
-The browser never opens the database file. Flask is the only part of the system that reads and writes SQLite. Role checks will live in Flask even when a button is hidden in the page. Those checks are not implemented yet.
+The browser never opens the database file. Flask is the only part of the system
+that reads and writes SQLite. Authorization is enforced in Flask even if a UI
+element is hidden; UI filtering is never treated as a security control.
+
+Every `/api/*` request is denied by default. Only `GET /api/health` and
+`POST /api/auth/login` are public. `GET /api/auth/me` and `POST /api/auth/logout`
+need a valid session; all other routes need an explicit permission decorator.
+Roles are read from the database on each request and cached only for that
+request (`flask.g`), never in the session. Endpoint denial returns `403`; a
+record outside the caller's scope returns `404`.
 
 ## Folder map
 
@@ -42,24 +53,25 @@ The browser never opens the database file. Flask is the only part of the system 
 employee-management-system/
 ├── UI/                 pages and static files
 ├── BACKEND/
-│   ├── app/            Flask package
-│   ├── database/       schema.sql, seed.sql, and the local SQLite file
-│   └── tests/          automated tests (later phases)
+│   ├── app/            Flask package, including app/auth and app/services
+│   ├── database/       schema.sql, seed.sql, migrations/, and the local SQLite file
+│   └── tests/          automated tests, including RBAC tests and a test-only blueprint
 └── DOCS/               architecture, database, API, setup, and user guides
 ```
 
 | Path | Role in Phase 1 |
 |---|---|
 | `BACKEND/run.py` | Starts Flask on `127.0.0.1:5000` |
-| `BACKEND/app/__init__.py` | Builds the Flask app and, later, registers blueprints |
+| `BACKEND/app/__init__.py` | Builds the app, registers blueprints, enforces default-deny on `/api/*` |
 | `BACKEND/app/config.py` | Reads `FLASK_SECRET_KEY`, `DATABASE_PATH`, and `FLASK_ENV` |
-| `BACKEND/app/db.py` | Reserved for the SQLite connection. It does not open a database yet |
+| `BACKEND/app/db.py` | SQLite connection, `init`, `migrate`, and demo-password commands |
 | `BACKEND/app/models/` | Future SQL helpers |
-| `BACKEND/app/routes/` | Future REST endpoints |
-| `BACKEND/app/services/` | Future business rules |
-| `BACKEND/app/auth/` | Future login and role checks |
-| `BACKEND/database/schema.sql` | Placeholder. Tables are added in Phase 2 |
-| `BACKEND/database/seed.sql` | Placeholder. Fake rows are added in Phase 2 |
+| `BACKEND/app/routes/` | Health and authentication endpoints |
+| `BACKEND/app/services/` | Password authentication and employee-scope rules |
+| `BACKEND/app/auth/` | Permission map, per-request user context, authorization decorators |
+| `BACKEND/database/schema.sql` | Fresh-database schema, including `users.employee_id` |
+| `BACKEND/database/seed.sql` | Fictional demo rows; no guessed user-employee links |
+| `BACKEND/database/migrations/` | Additive, idempotent migrations for existing databases |
 | `BACKEND/.env.example` | Placeholder settings safe to commit |
 | `UI/js/api.js` | Future home for all `fetch` calls. Base URL is `http://127.0.0.1:5000` |
 | `UI/js/auth.js` | Future login helper |
@@ -79,11 +91,11 @@ Local settings belong in `BACKEND/.env`, copied from `BACKEND/.env.example`.
 
 | Phase | Adds |
 |---|---|
-| 2 | Tables, foreign keys, and fake seed data |
+| 2 | Tables, foreign keys, and fake seed data (implemented) |
 | 3 | First REST read endpoints |
 | 4 | Shared pages and styles that call the API |
 | 5 | Employee create, read, update, and archive |
-| 6 | Login and role-based access |
+| 6 | Login and RBAC foundation (implemented: permission map, decorators, default-deny, additive migration) |
 | 7–11 | Hierarchy, JML, projects, skills, salary, reports, and audit |
 | 12 | Full test pass and local deployment with Waitress |
 

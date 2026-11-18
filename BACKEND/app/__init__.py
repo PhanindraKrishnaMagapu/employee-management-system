@@ -1,11 +1,20 @@
-
 """Flask application factory for Employee Management System."""
 
-from flask import Flask, jsonify
+from flask import Flask, current_app, jsonify, request
 
+from app.auth.context import get_current_user
+from app.auth.decorators import AUTHENTICATION_REQUIRED, PERMISSION_DENIED
 from app.config import DEFAULT_SECRET_KEY, Config, is_production
 from app.routes.health import health_bp
 from app.routes.auth import auth_bp
+
+
+# Deliberately small: every other /api/* route is authenticated by default and
+# must also be marked by a real authorization decorator to be reachable.
+PUBLIC_API_ENDPOINTS = frozenset({
+    ("GET", "/api/health"),
+    ("POST", "/api/auth/login"),
+})
 
 
 def create_app(config_class=Config):
@@ -30,7 +39,39 @@ def create_app(config_class=Config):
     app.register_blueprint(health_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
 
-    # Handle unknown API routes
+    @app.before_request
+    def default_deny_api():
+        """Require authentication and an explicit decorator on /api/*."""
+
+        if not request.path.startswith("/api/"):
+            return None
+        if (request.method, request.path) in PUBLIC_API_ENDPOINTS:
+            return None
+
+        if get_current_user() is None:
+            return jsonify({
+                "success": False,
+                "message": AUTHENTICATION_REQUIRED,
+            }), 401
+
+        endpoint = request.endpoint
+        view = current_app.view_functions.get(endpoint) if endpoint else None
+        if view is None or not getattr(view, "_rbac_protected", False):
+            return jsonify({
+                "success": False,
+                "message": PERMISSION_DENIED,
+            }), 403
+
+        return None
+
+    # Handle unknown API routes and record-scope abort(404) calls.
+    @app.errorhandler(403)
+    def forbidden(error):
+        return jsonify({
+            "success": False,
+            "message": PERMISSION_DENIED
+        }), 403
+
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({

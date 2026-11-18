@@ -11,7 +11,8 @@ INSERT OR IGNORE INTO roles (id, name, description) VALUES
 (4, 'Department Manager', 'Department Manager'),
 (5, 'Project Manager', 'Project Manager'),
 (6, 'Employee', 'Standard Employee'),
-(7, 'System Admin', 'System Administrator');
+(7, 'System Admin', 'System Administrator'),
+(8, 'Payroll Admin', 'Explicit salary access grant');
 
 -- 2. Departments
 INSERT OR IGNORE INTO departments (id, name, description) VALUES
@@ -29,15 +30,19 @@ INSERT OR IGNORE INTO designations (id, title, description) VALUES
 
 -- 4. Users
 -- Password hashes are deliberately unusable placeholders.
--- Real password hashing will be implemented in Phase 6.
-INSERT OR IGNORE INTO users (id, username, email, password_hash) VALUES
-(1, 'demo_ceo', 'ceo@example.invalid', 'NOT_A_REAL_PASSWORD_HASH'),
-(2, 'demo_hr_admin', 'hradmin@example.invalid', 'NOT_A_REAL_PASSWORD_HASH'),
-(3, 'demo_hr_exec', 'hrexecutive@example.invalid', 'NOT_A_REAL_PASSWORD_HASH'),
-(4, 'demo_dept_manager', 'manager@example.invalid', 'NOT_A_REAL_PASSWORD_HASH'),
-(5, 'demo_project_manager', 'projectmanager@example.invalid', 'NOT_A_REAL_PASSWORD_HASH'),
-(6, 'demo_employee', 'employee@example.invalid', 'NOT_A_REAL_PASSWORD_HASH'),
-(7, 'demo_sysadmin', 'sysadmin@example.invalid', 'NOT_A_REAL_PASSWORD_HASH');
+-- The development password tool replaces those placeholders; see setup-guide.md.
+--
+-- employee_id is left NULL for every demo account. The existing seed data has
+-- no explicit user-to-employee relationship; matching by name, email or job
+-- title would be a guess, so those mappings must be assigned deliberately.
+INSERT OR IGNORE INTO users (id, username, email, password_hash, employee_id) VALUES
+(1, 'demo_ceo', 'ceo@example.invalid', 'NOT_A_REAL_PASSWORD_HASH', NULL),
+(2, 'demo_hr_admin', 'hradmin@example.invalid', 'NOT_A_REAL_PASSWORD_HASH', NULL),
+(3, 'demo_hr_exec', 'hrexecutive@example.invalid', 'NOT_A_REAL_PASSWORD_HASH', NULL),
+(4, 'demo_dept_manager', 'manager@example.invalid', 'NOT_A_REAL_PASSWORD_HASH', NULL),
+(5, 'demo_project_manager', 'projectmanager@example.invalid', 'NOT_A_REAL_PASSWORD_HASH', NULL),
+(6, 'demo_employee', 'employee@example.invalid', 'NOT_A_REAL_PASSWORD_HASH', NULL),
+(7, 'demo_sysadmin', 'sysadmin@example.invalid', 'NOT_A_REAL_PASSWORD_HASH', NULL);
 
 -- 5. Employees
 -- All names, emails and contact details are fictional.

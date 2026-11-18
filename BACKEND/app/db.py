@@ -3,6 +3,7 @@
 import argparse
 import getpass
 import os
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -13,6 +14,7 @@ from app.config import Config, is_production
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 SCHEMA_FILE = BACKEND_DIR / "database" / "schema.sql"
 SEED_FILE = BACKEND_DIR / "database" / "seed.sql"
+MIGRATIONS_DIR = BACKEND_DIR / "database" / "migrations"
 
 # Exact fictional demo accounts managed by the development-only password tool.
 DEMO_USERNAMES = (
@@ -73,6 +75,102 @@ def initialize_database(seed=True):
 
     finally:
         connection.close()
+
+
+_ADD_COLUMN_PATTERN = re.compile(
+    r"^\s*ALTER\s+TABLE\s+([A-Za-z_][A-Za-z0-9_]*)\s+ADD\s+(?:COLUMN\s+)?"
+    r"([A-Za-z_][A-Za-z0-9_]*)",
+    re.IGNORECASE,
+)
+
+
+def _sql_statements(script):
+    """Split a migration script into statements, ignoring comment lines."""
+
+    statements = []
+    buffer = []
+
+    for line in script.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("--"):
+            continue
+        buffer.append(line)
+        candidate = "\n".join(buffer).strip()
+        if sqlite3.complete_statement(candidate):
+            statements.append(candidate)
+            buffer = []
+
+    remainder = "\n".join(buffer).strip()
+    if remainder:
+        statements.append(remainder)
+
+    return statements
+
+
+def _column_exists(connection, table, column):
+    rows = connection.execute(f'PRAGMA table_info("{table}")').fetchall()
+    return any(row["name"] == column for row in rows)
+
+
+def apply_migrations():
+    """Apply pending additive migrations safely and idempotently.
+
+    A ``schema_migrations`` table records completed scripts. In addition,
+    ALTER TABLE ... ADD COLUMN statements are skipped when the column already
+    exists, so re-running after a partial application cannot fail. The local
+    development database is only changed when this function is called with
+    that database configured; tests always point it at a temporary file.
+    """
+
+    connection = get_connection()
+    applied = []
+    skipped = []
+
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                name TEXT PRIMARY KEY,
+                applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+        recorded = {
+            row["name"]
+            for row in connection.execute("SELECT name FROM schema_migrations")
+        }
+
+        migration_files = sorted(MIGRATIONS_DIR.glob("*.sql"))
+        for path in migration_files:
+            name = path.stem
+            if name in recorded:
+                skipped.append(name)
+                continue
+
+            for statement in _sql_statements(path.read_text(encoding="utf-8")):
+                match = _ADD_COLUMN_PATTERN.match(statement)
+                if match and _column_exists(connection, match.group(1), match.group(2)):
+                    continue
+                connection.execute(statement)
+
+            connection.execute(
+                "INSERT INTO schema_migrations (name) VALUES (?)", (name,)
+            )
+            applied.append(name)
+            recorded.add(name)
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
+
+    return {"applied": applied, "skipped": skipped}
 
 
 def is_valid_password_hash(value):
@@ -178,8 +276,8 @@ def main():
     parser = argparse.ArgumentParser(description="Employee Management System database")
     parser.add_argument(
         "command",
-        choices=["init", "demo-passwords"],
-        help="Initialize the database or provision development demo passwords",
+        choices=["init", "migrate", "demo-passwords"],
+        help="Initialize the database, apply migrations, or provision demo passwords",
     )
     parser.add_argument(
         "--no-seed",
@@ -210,6 +308,18 @@ def main():
         except (sqlite3.Error, OSError, ValueError) as error:
             print(f"Database initialization failed: {error}", file=sys.stderr)
             raise SystemExit(1) from error
+        return
+
+    if args.command == "migrate":
+        try:
+            result = apply_migrations()
+        except (sqlite3.Error, OSError, ValueError) as error:
+            print(f"Database migration failed: {error}", file=sys.stderr)
+            raise SystemExit(1) from error
+
+        print(f"Applied migration(s): {', '.join(result['applied']) or 'none'}")
+        if result["skipped"]:
+            print(f"Already applied: {', '.join(result['skipped'])}")
         return
 
     try:

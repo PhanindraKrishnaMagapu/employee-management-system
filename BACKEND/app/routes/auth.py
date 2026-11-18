@@ -3,7 +3,8 @@
 
 from flask import Blueprint, jsonify, request, session
 
-from app.db import get_connection
+from app.auth.context import get_current_user
+from app.auth.decorators import require_authentication
 from app.services.auth import authenticate_user
 
 
@@ -67,6 +68,7 @@ def login():
 
 
 @auth_bp.route("/auth/logout", methods=["POST"])
+@require_authentication
 def logout():
     """Destroy the current login session."""
 
@@ -79,56 +81,18 @@ def logout():
 
 
 @auth_bp.route("/auth/me", methods=["GET"])
+@require_authentication
 def current_user():
     """Return the currently authenticated user."""
 
-    user_id = session.get("user_id")
+    user = get_current_user()
 
-    if not user_id:
-        return jsonify({
-            "success": False,
-            "message": "Authentication required"
-        }), 401
-
-    connection = get_connection()
-
-    try:
-        user = connection.execute(
-            """
-            SELECT id, username, email
-            FROM users
-            WHERE id = ? AND is_active = 1
-            """,
-            (user_id,)
-        ).fetchone()
-
-        if not user:
-            session.clear()
-            return jsonify({
-                "success": False,
-                "message": "Authentication required"
-            }), 401
-
-        roles = connection.execute(
-            """
-            SELECT r.name
-            FROM roles r
-            JOIN user_roles ur ON ur.role_id = r.id
-            WHERE ur.user_id = ?
-            ORDER BY r.name
-            """,
-            (user_id,)
-        ).fetchall()
-
-        return jsonify({
-            "success": True,
-            "user": {
-                "id": user["id"],
-                "username": user["username"],
-                "email": user["email"],
-                "roles": [role["name"] for role in roles]
-            }
-        }), 200
-
-    finally:
-        connection.close()
+    return jsonify({
+        "success": True,
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "roles": list(user.roles)
+        }
+    }), 200
