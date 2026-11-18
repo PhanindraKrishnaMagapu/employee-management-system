@@ -1,6 +1,6 @@
 # Setup Guide – Employee Management System
 
-**Current Status:** Phase 2 – Database Foundation Implemented
+**Current Status:** Database, authentication, RBAC, employee CRUD, and browser UI implemented
 
 This guide explains how to set up the Employee Management System on Windows using PowerShell.
 
@@ -142,7 +142,7 @@ From the `BACKEND` directory:
 python -m pytest tests/ -v
 ```
 
-The test suite checks:
+The database-focused tests check:
 
 1. All 15 tables are created.
 2. Foreign keys are enabled.
@@ -152,7 +152,7 @@ The test suite checks:
 6. Repeated initialization does not duplicate demo records.
 7. Demo password provisioning, hash preservation, `--force`, production refusal, rollback, and authentication verification.
 
-Latest verified result: **16 passed, 0 failed.**
+The complete backend suite currently passes: **146 passed, 0 failed.**
 
 Tests use temporary databases and do not modify the local development database. If pytest cannot access its default temporary folder, pass `--basetemp` with a writable path, for example `python -m pytest tests/ -v --basetemp C:\Temp\pytest-ems`.
 
@@ -164,27 +164,38 @@ From the `BACKEND` directory:
 python run.py
 ```
 
-The development server is expected to listen on:
+The development server listens on:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-Stop the server using `Ctrl + C`.
+Open <http://127.0.0.1:5000/> in a browser. Flask serves both the API and the UI from this same origin, so the session cookie works without CORS or a separate frontend server. Stop the server using `Ctrl + C`.
 
-Authentication endpoints are available at `/api/auth/login`, `/api/auth/logout`, and `/api/auth/me`. Employee endpoints are planned for a later phase.
+Implemented API areas are:
+
+- `GET /api/health` – API and database availability.
+- `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` – session authentication.
+- `GET`, `POST`, `PUT`, and `DELETE` under `/api/employees` – RBAC-protected employee CRUD.
+
+See `DOCS/api-documentation.md` for request and response details.
 
 ## 8. Frontend
 
-The frontend is located in:
+The frontend files live in `UI/`, but they are served through Flask. Do not open `UI/index.html` with a `file://` URL; use the address from section 7.
 
-```text
-UI/
-```
+| Browser URL | Served file |
+|---|---|
+| `/` | `UI/index.html` (login) |
+| `/pages/dashboard.html` | `UI/pages/dashboard.html` |
+| `/pages/employees.html` | `UI/pages/employees.html` |
+| `/pages/employee-form.html` | `UI/pages/employee-form.html` |
+| `/css/styles.css` | `UI/css/styles.css` |
+| `/js/...` | JavaScript helpers and page scripts under `UI/js/` |
 
-Open `UI/index.html` in a browser to view the current static frontend shell.
+The same-origin routes are registered in `BACKEND/app/routes/ui.py`. They only deliver static `.html`, `.css`, and `.js` files; they do not query the database or implement business logic.
 
-Frontend API integration will be implemented in later phases.
+Browser pages call relative `/api/...` URLs through `UI/js/api.js`. Its `API_BASE_URL` is empty and each request uses `credentials: "same-origin"`, so no absolute backend URL or CORS configuration is needed. The UI includes login/logout, the dashboard, the employee list with search, add/edit forms, and soft archive. See `DOCS/user-guide.md` for the user-facing steps and RBAC behavior.
 
 ## 9. Important Git and Security Notes
 

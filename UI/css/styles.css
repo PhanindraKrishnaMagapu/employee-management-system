@@ -1,5 +1,9 @@
 /* Shared layout for the Employee Management System.
-   Screen-specific rules will be added with the pages that need them. */
+   Plain, responsive styles with no animations or decorative effects. */
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -7,6 +11,20 @@ body {
   line-height: 1.5;
   color: #1c2430;
   background: #f4f6f8;
+}
+
+h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+code {
+  font-family: Consolas, monospace;
 }
 
 .page {
@@ -18,11 +36,332 @@ body {
   border-radius: 8px;
 }
 
-h1 {
-  margin-top: 0;
-  font-size: 1.6rem;
+/* Application shell */
+.layout {
+  display: flex;
+  min-height: 100vh;
 }
 
-code {
-  font-family: Consolas, monospace;
+.sidebar {
+  width: 14rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1rem;
+  background: #1f2937;
+  color: #ffffff;
+}
+
+.sidebar .brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.sidebar nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar nav a {
+  padding: 0.5rem 0.6rem;
+  border-radius: 4px;
+  color: #dbe4ee;
+  text-decoration: none;
+}
+
+.sidebar nav a:hover,
+.sidebar nav a.active {
+  background: #374151;
+  color: #ffffff;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.5rem;
+  background: #ffffff;
+  border-bottom: 1px solid #d9e0e7;
+}
+
+.topbar .roles {
+  color: #5b6675;
+  font-size: 0.9rem;
+}
+
+.content {
+  max-width: 72rem;
+  padding: 1.5rem;
+}
+
+.subtitle {
+  margin: 0 0 1.25rem;
+  color: #5b6675;
+}
+
+/* Controls */
+button,
+.button {
+  display: inline-block;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #c9d2dd;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1c2430;
+  font: inherit;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button[type="submit"],
+.button.primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.logout {
+  width: 100%;
+  background: transparent;
+  border-color: #4b5563;
+  color: #ffffff;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.link.danger {
+  color: #b3261e;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #c9d2dd;
+  border-radius: 4px;
+  font: inherit;
+  color: inherit;
+}
+
+/* Messages */
+.message {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.message.success {
+  background: #e6f4ea;
+  border-color: #b7dfc2;
+  color: #1b5e20;
+}
+
+.message.error {
+  background: #fdecea;
+  border-color: #f3c2bd;
+  color: #8b1e1e;
+}
+
+/* Dashboard */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+}
+
+.card-label {
+  color: #5b6675;
+  font-size: 0.9rem;
+}
+
+.card strong {
+  font-size: 1.8rem;
+}
+
+.card .card-value {
+  font-size: 1.1rem;
+}
+
+.panel {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Employee list */
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.toolbar input[type="search"] {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e3e8ee;
+}
+
+th {
+  background: #f7f9fb;
+  font-size: 0.9rem;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.empty {
+  color: #5b6675;
+}
+
+/* Forms */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* Login */
+.login-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.login-panel {
+  width: 100%;
+  max-width: 24rem;
+  padding: 1.75rem;
+  background: #ffffff;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+}
+
+.login-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 48rem) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .sidebar nav {
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .logout {
+    width: auto;
+    margin-left: auto;
+  }
+
+  .topbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .content {
+    padding: 1rem;
+  }
 }

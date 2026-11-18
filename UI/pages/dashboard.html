@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1>Dashboard</h1>
+        <p class="subtitle">Employee records available to your role.</p>
+
+        <section class="cards">
+          <div class="card">
+            <span class="card-label">Total employees</span>
+            <strong id="total-employees">-</strong>
+          </div>
+          <div class="card">
+            <span class="card-label">Active employees</span>
+            <strong id="active-employees">-</strong>
+          </div>
+          <div class="card">
+            <span class="card-label">Your access</span>
+            <strong id="access-level" class="card-value">-</strong>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Quick actions</h2>
+          <div class="actions">
+            <a id="view-link" class="button" href="/pages/employees.html">View employees</a>
+            <a id="add-link" class="button primary" href="/pages/employee-form.html">Add employee</a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/dashboard.js"></script>
+</body>
+</html>

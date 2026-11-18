@@ -159,7 +159,7 @@ Current Phase 2 test results:
 
 RBAC tests additionally verify role mappings, employee scope, manager cycles,
 missing links, and that migration is idempotent and preserves existing rows and
-password hashes. **Latest full backend result: 101 tests passed, 0 failed.**
+password hashes. **Latest full backend result: 146 tests passed, 0 failed.**
 
 ## 9. Future Improvements
 

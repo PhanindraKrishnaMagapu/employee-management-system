@@ -7,6 +7,8 @@ from app.auth.decorators import AUTHENTICATION_REQUIRED, PERMISSION_DENIED
 from app.config import DEFAULT_SECRET_KEY, Config, is_production
 from app.routes.health import health_bp
 from app.routes.auth import auth_bp
+from app.routes.employees import employees_bp
+from app.routes.ui import ui_bp
 
 
 # Deliberately small: every other /api/* route is authenticated by default and
@@ -38,6 +40,8 @@ def create_app(config_class=Config):
     # Register API blueprints
     app.register_blueprint(health_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(employees_bp, url_prefix="/api/employees")
+    app.register_blueprint(ui_bp)
 
     @app.before_request
     def default_deny_api():
