@@ -7,10 +7,14 @@ you trust to load them. See DOCS/setup-guide.md.
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # BACKEND/ directory (parent of the app package).
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Development-only fallback. Production startup refuses this value.
+DEFAULT_SECRET_KEY = "dev-only-change-me"
 
 
 def _database_path():
@@ -39,6 +43,15 @@ class Config:
     """Settings for the local Employee Management System."""
 
     # Development fallback only. Set FLASK_SECRET_KEY before real use.
-    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "dev-only-change-me")
+    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", DEFAULT_SECRET_KEY)
     DATABASE_PATH = _database_path()
     FLASK_ENV = os.environ.get("FLASK_ENV", "development")
+
+    # The session cookie is an authentication credential, so harden it.
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = is_production()
+
+    # Login marks sessions as permanent so this lifetime applies to the
+    # cookie. Non-permanent sessions still expire when the browser closes.
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=8)

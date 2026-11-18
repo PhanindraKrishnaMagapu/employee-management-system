@@ -14,7 +14,15 @@ auth_bp = Blueprint("auth", __name__)
 def login():
     """Authenticate a user and create a session."""
 
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True)
+
+    # A valid JSON scalar or array has no .get(); treat every non-object body
+    # as a bad request instead of letting it become a 500 error.
+    if not isinstance(data, dict):
+        return jsonify({
+            "success": False,
+            "message": "Username and password are required"
+        }), 400
 
     username = data.get("username")
     password = data.get("password")
@@ -42,6 +50,8 @@ def login():
         }), 401
 
     session.clear()
+    # Apply the configured PERMANENT_SESSION_LIFETIME to the login cookie.
+    session.permanent = True
     session["user_id"] = user["id"]
 
     return jsonify({

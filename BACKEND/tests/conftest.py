@@ -2,6 +2,7 @@
 
 import pytest
 
+from app import create_app
 from app.config import Config
 from app.db import initialize_database
 
@@ -18,3 +19,18 @@ def isolated_db(tmp_path, monkeypatch):
     monkeypatch.delenv("FLASK_ENV", raising=False)
     initialize_database()
     return database_path
+
+
+@pytest.fixture
+def app(isolated_db, monkeypatch):
+    """Create a Flask app whose requests use the isolated temp database."""
+    monkeypatch.setattr(Config, "SECRET_KEY", "auth-test-secret-key")
+    application = create_app()
+    application.config["TESTING"] = True
+    return application
+
+
+@pytest.fixture
+def client(app):
+    """Flask test client for API requests."""
+    return app.test_client()
