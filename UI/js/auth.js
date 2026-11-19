@@ -32,6 +32,7 @@ const ROLE_CAPABILITIES = {
     "create",
     "updateFull",
     "archive",
+    "salaryManage",
     "jmlManage",
     "projectRead",
     "projectManage",
@@ -48,7 +49,7 @@ const ROLE_CAPABILITIES = {
   ],
   "Project Manager": ["projectRead", "projectManage", "employeePicker"],
   Employee: ["readScoped", "updateSelf", "skillsRead"],
-  "Payroll Admin": ["salaryRead", "salaryManage"],
+  "Payroll Admin": ["salaryRead"],
 };
 
 function getStoredUser() {
@@ -121,8 +122,8 @@ function canManageSkills(user) {
   return can(user, "skillsManage");
 }
 
-// Salary access is intentionally separate from employee access. Payroll Admin
-// has salary:manage but not salary:read, so manage implies read access.
+// Salary access is separate from employee access. HR Admin manages records;
+// Payroll Admin retains read-only access. Manage also permits reading.
 function canReadSalary(user) {
   return can(user, "salaryRead") || can(user, "salaryManage");
 }

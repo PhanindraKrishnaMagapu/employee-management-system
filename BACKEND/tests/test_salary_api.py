@@ -38,8 +38,10 @@ DEMO_USER_BY_ROLE = {
     perms.ROLE_EMPLOYEE: "demo_employee",
     perms.ROLE_SYSTEM_ADMIN: "demo_sysadmin",
 }
-PAYROLL_USERNAME = "test_salary_payroll_admin"
-PAYROLL_USER_ID = 92
+PAYROLL_USERNAME = "test_salary_payroll_reader"
+PAYROLL_USER_ID = 93
+SALARY_ADMIN_USERNAME = "test_salary_hr_admin"
+SALARY_ADMIN_USER_ID = 92
 
 
 def _set_password(username):
@@ -101,6 +103,35 @@ def _create_payroll_user():
         connection.close()
 
 
+def _create_salary_admin_user():
+    connection = get_connection()
+    try:
+        role = connection.execute(
+            "SELECT id FROM roles WHERE name = ?", (perms.ROLE_HR_ADMIN,)
+        ).fetchone()
+        connection.execute(
+            "INSERT OR REPLACE INTO users "
+            "(id, username, email, password_hash, employee_id) "
+            "VALUES (?, ?, ?, ?, NULL)",
+            (
+                SALARY_ADMIN_USER_ID,
+                SALARY_ADMIN_USERNAME,
+                "salary-test-hr-admin@example.invalid",
+                "placeholder",
+            ),
+        )
+        connection.execute(
+            "DELETE FROM user_roles WHERE user_id = ?", (SALARY_ADMIN_USER_ID,)
+        )
+        connection.execute(
+            "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)",
+            (SALARY_ADMIN_USER_ID, role["id"]),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
 def _login_as(client, username):
     _set_password(username)
     client.post("/api/auth/logout")
@@ -120,14 +151,19 @@ def _login_role(client, role):
 
 
 def _login_payroll(client):
-    _create_payroll_user()
-    return _login_as(client, PAYROLL_USERNAME)
+    _create_salary_admin_user()
+    return _login_as(client, SALARY_ADMIN_USERNAME)
 
 
 def _salary_payload(**overrides):
     payload = {
         "employee_id": 7,
         "annual_salary": 1200000,
+        "monthly_gross_salary": 100000,
+        "monthly_basic_salary": 50000,
+        "monthly_hra": 20000,
+        "monthly_allowances": 30000,
+        "monthly_deductions": 5000,
         "currency": "INR",
         "effective_from": "2026-04-01",
         "effective_to": None,
@@ -249,11 +285,15 @@ def test_salary_permissions_by_role(client, role):
     picker = client.get("/api/salaries/employees")
     created = _create_salary(client)
 
-    if role == perms.ROLE_PAYROLL_ADMIN:
+    if role == perms.ROLE_HR_ADMIN:
+        assert listed.status_code == 200, listed.get_json()
+        assert picker.status_code == 200, picker.get_json()
+        assert created.status_code == 201, created.get_json()
+    elif role == perms.ROLE_PAYROLL_ADMIN:
         assert listed.status_code == 200, listed.get_json()
         assert listed.get_json()["salaries"] == []
         assert picker.status_code == 200, picker.get_json()
-        assert created.status_code == 201, created.get_json()
+        assert created.status_code == 403, created.get_json()
     else:
         for response in (listed, picker, created):
             assert response.status_code == 403, response.get_json()
@@ -263,9 +303,7 @@ def test_salary_permissions_by_role(client, role):
             }
 
 
-def test_combined_roles_add_salary_without_general_employee_access(client):
-    _login_as(client, "demo_hr_admin")
-    _add_role("demo_hr_admin", perms.ROLE_PAYROLL_ADMIN)
+def test_hr_admin_manages_salary_and_other_salary_read_roles_cannot_write(client):
     _login_as(client, "demo_hr_admin")
     assert client.get("/api/salaries").status_code == 200
     assert _create_salary(client, employee_id=7).status_code == 201
@@ -275,7 +313,7 @@ def test_combined_roles_add_salary_without_general_employee_access(client):
     _login_as(client, "demo_project_manager")
     assert client.get("/api/salaries").status_code == 200
     assert client.get("/api/salaries/employees").status_code == 200
-    assert _create_salary(client, employee_id=5).status_code == 201
+    assert _create_salary(client, employee_id=5).status_code == 403
     # The project-only employee grant must not become general employee access.
     assert client.get("/api/employees").status_code == 403
 
@@ -283,14 +321,16 @@ def test_combined_roles_add_salary_without_general_employee_access(client):
     _login_as(client, "demo_employee")
     assert client.get("/api/salaries").status_code == 200
     assert client.get("/api/salaries/employees").status_code == 200
+    assert _create_salary(client, employee_id=7).status_code == 403
 
     _add_role("demo_sysadmin", perms.ROLE_PAYROLL_ADMIN)
     _login_as(client, "demo_sysadmin")
     assert client.get("/api/salaries").status_code == 200
+    assert _create_salary(client, employee_id=7).status_code == 403
     assert client.get("/api/employees").status_code == 403
 
 
-def test_payroll_admin_crud_picker_and_no_delete(client):
+def test_hr_admin_crud_picker_and_no_delete(client):
     _login_payroll(client)
 
     picker = client.get("/api/salaries/employees")
@@ -305,6 +345,11 @@ def test_payroll_admin_crud_picker_and_no_delete(client):
     _assert_salary_shape(salary)
     assert salary["employee_id"] == 7
     assert salary["annual_salary"] == 1200000.0
+    assert salary["monthly_gross_salary"] == 100000.0
+    assert salary["monthly_basic_salary"] == 50000.0
+    assert salary["monthly_hra"] == 20000.0
+    assert salary["monthly_allowances"] == 30000.0
+    assert salary["monthly_deductions"] == 5000.0
     assert salary["currency"] == "INR"
     assert salary["effective_from"] == "2026-04-01"
     assert salary["effective_to"] is None
@@ -334,6 +379,7 @@ def test_payroll_admin_crud_picker_and_no_delete(client):
     assert updated.status_code == 200, updated.get_json()
     body = updated.get_json()["salary"]
     assert body["annual_salary"] == 1500000.25
+    assert body["monthly_gross_salary"] == 100000.0
     assert body["currency"] == "USD"
     assert body["effective_to"] == "2027-03-31"
     assert updated.get_json()["message"] == "Salary record updated"
@@ -354,6 +400,31 @@ def test_payroll_admin_crud_picker_and_no_delete(client):
     deleted = client.delete(f"/api/salaries/{salary['id']}")
     assert deleted.status_code in (403, 404, 405)
     assert client.get(f"/api/salaries/{salary['id']}").status_code == 200
+
+
+def test_salary_write_and_employee_idor_are_restricted(client):
+    _login_payroll(client)
+    salary = _created_salary(_create_salary(client, employee_id=7))
+    salary_id = salary["id"]
+
+    # Payroll Admin has existing read-only visibility, but cannot create/update.
+    _login_role(client, perms.ROLE_PAYROLL_ADMIN)
+    assert client.get(f"/api/salaries/{salary_id}").status_code == 200
+    assert _create_salary(client, employee_id=1).status_code == 403
+    assert client.put(
+        f"/api/salaries/{salary_id}", json={"annual_salary": 1}
+    ).status_code == 403
+
+    for username in ("demo_employee", "demo_dept_manager", "demo_hr_exec", "demo_ceo"):
+        _login_as(client, username)
+        assert client.get(
+            "/api/salaries", query_string={"employee_id": 1}
+        ).status_code == 403
+        assert client.get(f"/api/salaries/{salary_id}").status_code == 403
+        assert _create_salary(client, employee_id=1).status_code == 403
+        assert client.put(
+            f"/api/salaries/{salary_id}", json={"annual_salary": 1}
+        ).status_code == 403
 
 
 def test_creating_later_period_closes_previous_open_record(client):
@@ -420,7 +491,7 @@ def test_auto_close_writes_safe_update_and_create_audit_entries(client):
     assert create_first["record_id"] == first["id"]
     _assert_audit_summary(create_first, 7)
 
-    assert auto_close["actor_user_id"] == PAYROLL_USER_ID
+    assert auto_close["actor_user_id"] == SALARY_ADMIN_USER_ID
     assert auto_close["action"] == salary_service.SALARY_AUDIT_UPDATE
     assert auto_close["table_name"] == salary_service.SALARY_AUDIT_TABLE
     assert auto_close["record_id"] == first["id"]
@@ -597,6 +668,18 @@ def test_salary_create_and_update_validation(client):
         ),
         (
             client.post("/api/salaries", json=_salary_payload(annual_salary=123.456)),
+            "two decimal places",
+        ),
+        (
+            client.post(
+                "/api/salaries", json=_salary_payload(monthly_hra=-1)
+            ),
+            "non-negative finite amount",
+        ),
+        (
+            client.post(
+                "/api/salaries", json=_salary_payload(monthly_deductions=12.345)
+            ),
             "two decimal places",
         ),
         (
@@ -865,13 +948,13 @@ def test_salary_create_and_update_write_safe_audit_logs(client):
     assert len(rows) == 2
     create_row, update_row = rows
 
-    assert create_row["actor_user_id"] == PAYROLL_USER_ID
+    assert create_row["actor_user_id"] == SALARY_ADMIN_USER_ID
     assert create_row["action"] == salary_service.SALARY_AUDIT_CREATE
     assert create_row["table_name"] == salary_service.SALARY_AUDIT_TABLE
     assert create_row["record_id"] == salary["id"]
     _assert_audit_summary(create_row, 7)
 
-    assert update_row["actor_user_id"] == PAYROLL_USER_ID
+    assert update_row["actor_user_id"] == SALARY_ADMIN_USER_ID
     assert update_row["action"] == salary_service.SALARY_AUDIT_UPDATE
     assert update_row["table_name"] == salary_service.SALARY_AUDIT_TABLE
     assert update_row["record_id"] == salary["id"]
@@ -984,7 +1067,7 @@ def test_archived_employee_salary_corrections_are_allowed_and_audited(client):
         salary_service.SALARY_AUDIT_UPDATE,
     ]
     for row in rows:
-        assert row["actor_user_id"] == PAYROLL_USER_ID
+        assert row["actor_user_id"] == SALARY_ADMIN_USER_ID
         assert row["table_name"] == salary_service.SALARY_AUDIT_TABLE
         assert row["record_id"] in (first["id"], second["id"])
         _assert_audit_summary(row, 7)
@@ -1070,12 +1153,12 @@ def test_archived_employee_salary_correction_rejects_invalid_dates_and_overlaps(
     assert len(_salary_audit_rows()) == before
 
 
-def test_salary_audit_logging_requires_salary_manage(client):
+def test_salary_audit_logging_requires_hr_admin_salary_manage(client):
     _login_payroll(client)
     salary = _created_salary(_create_salary(client))
     assert len(_salary_audit_rows()) == 1
 
-    _login_as(client, "demo_hr_admin")
+    _login_role(client, perms.ROLE_PAYROLL_ADMIN)
     denied_create = _create_salary(client, employee_id=5)
     denied_update = client.put(
         f"/api/salaries/{salary['id']}", json={"annual_salary": 1}
@@ -1167,17 +1250,16 @@ def test_salary_permission_constants_and_role_grants():
     assert perms.PERMISSION_SALARY_READ in perms.ALL_PERMISSIONS
     assert perms.PERMISSION_SALARY_MANAGE in perms.ALL_PERMISSIONS
 
+    assert perms.ROLE_PERMISSIONS[perms.ROLE_HR_ADMIN] & {
+        perms.PERMISSION_SALARY_MANAGE,
+    } == {perms.PERMISSION_SALARY_MANAGE}
     assert perms.ROLE_PERMISSIONS[perms.ROLE_PAYROLL_ADMIN] == frozenset({
         perms.PERMISSION_SALARY_READ,
-        perms.PERMISSION_SALARY_MANAGE,
     })
     for role in ALL_ROLES:
-        if role == perms.ROLE_PAYROLL_ADMIN:
+        if role == perms.ROLE_HR_ADMIN:
             continue
-        assert not perms.permissions_for_roles((role,)) & {
-            perms.PERMISSION_SALARY_READ,
-            perms.PERMISSION_SALARY_MANAGE,
-        }
+        assert perms.PERMISSION_SALARY_MANAGE not in perms.permissions_for_roles((role,))
 
 
 def test_salary_scope_helper_grants_only_explicit_payroll_grant():
@@ -1191,9 +1273,14 @@ def test_salary_scope_helper_grants_only_explicit_payroll_grant():
     try:
         payroll = User(
             (perms.ROLE_PAYROLL_ADMIN,),
-            (perms.PERMISSION_SALARY_READ, perms.PERMISSION_SALARY_MANAGE),
+            (perms.PERMISSION_SALARY_READ,),
         )
         assert salary_service.salary_employee_scope(payroll, connection) is None
+
+        hr_admin = User(
+            (perms.ROLE_HR_ADMIN,), (perms.PERMISSION_SALARY_MANAGE,)
+        )
+        assert salary_service.salary_employee_scope(hr_admin, connection) is None
 
         employee = User(
             (perms.ROLE_EMPLOYEE,),

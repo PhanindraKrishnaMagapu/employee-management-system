@@ -2,6 +2,13 @@
 
 let salaryFormId = null;
 let salaryFormEmployeeId = null;
+const SALARY_COMPONENT_INPUTS = {
+  monthly_gross_salary: "monthly-gross-salary",
+  monthly_basic_salary: "monthly-basic-salary",
+  monthly_hra: "monthly-hra",
+  monthly_allowances: "monthly-allowances",
+  monthly_deductions: "monthly-deductions",
+};
 
 function salaryValueOrDash(value) {
   return value === null || value === undefined || value === ""
@@ -85,6 +92,9 @@ async function loadSalaryForEdit() {
 
   salaryFormEmployeeId = Number(salary.employee_id);
   setFormValue("annual-salary", salary.annual_salary);
+  Object.keys(SALARY_COMPONENT_INPUTS).forEach(function (field) {
+    setFormValue(SALARY_COMPONENT_INPUTS[field], salary[field]);
+  });
   setFormValue("currency", salary.currency || "INR");
   setFormValue("effective-from", salary.effective_from);
   setFormValue("effective-to", salary.effective_to);
@@ -133,6 +143,19 @@ function collectSalaryPayload() {
     effective_from: effectiveFrom,
     effective_to: effectiveTo || null,
   };
+
+  for (const [field, id] of Object.entries(SALARY_COMPONENT_INPUTS)) {
+    const input = document.getElementById(id).value.trim();
+    if (input === "") {
+      payload[field] = null;
+      continue;
+    }
+    if (!/^\d+(\.\d{1,2})?$/.test(input) || !Number.isFinite(Number(input))) {
+      showMessage("error", "Salary components must be non-negative amounts with at most two decimal places.");
+      return null;
+    }
+    payload[field] = Number(input);
+  }
 
   if (salaryFormId === null) {
     const employeeId = Number(document.getElementById("employee").value);

@@ -161,6 +161,19 @@ CREATE TABLE IF NOT EXISTS salary_records (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     employee_id INTEGER NOT NULL,
     annual_salary REAL NOT NULL CHECK (annual_salary >= 0),
+    monthly_gross_salary REAL CHECK (
+        monthly_gross_salary IS NULL OR monthly_gross_salary >= 0
+    ),
+    monthly_basic_salary REAL CHECK (
+        monthly_basic_salary IS NULL OR monthly_basic_salary >= 0
+    ),
+    monthly_hra REAL CHECK (monthly_hra IS NULL OR monthly_hra >= 0),
+    monthly_allowances REAL CHECK (
+        monthly_allowances IS NULL OR monthly_allowances >= 0
+    ),
+    monthly_deductions REAL CHECK (
+        monthly_deductions IS NULL OR monthly_deductions >= 0
+    ),
     currency TEXT NOT NULL DEFAULT 'INR',
     effective_from TEXT NOT NULL,
     effective_to TEXT,

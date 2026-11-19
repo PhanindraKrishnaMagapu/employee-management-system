@@ -83,6 +83,7 @@ function renderSalaryRows() {
         "<td>" + escapeHtml(salaryEmployeeName(employee)) + "</td>" +
         "<td>" + escapeHtml(salaryValueOrDash(employee.employee_code)) + "</td>" +
         "<td>" + escapeHtml(formatSalaryAmount(salary.annual_salary)) + "</td>" +
+        "<td>" + escapeHtml(salary.monthly_gross_salary == null ? "-" : formatSalaryAmount(salary.monthly_gross_salary)) + "</td>" +
         "<td>" + escapeHtml(salary.currency) + "</td>" +
         "<td>" + escapeHtml(salaryValueOrDash(salary.effective_from)) + "</td>" +
         "<td>" + escapeHtml(salaryValueOrDash(salary.effective_to)) + "</td>" +

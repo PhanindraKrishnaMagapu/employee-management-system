@@ -23,19 +23,25 @@
         <h1>Employees</h1>
         <p class="subtitle">Search and manage the records visible to your role.</p>
 
-        <div class="toolbar">
+        <div class="toolbar employee-directory-toolbar">
           <input id="search" type="search" placeholder="Search by name, email, or employee code" aria-label="Search employees">
+          <select id="department-filter" aria-label="Filter by department">
+            <option value="">All departments</option>
+          </select>
+          <select id="status-filter" aria-label="Filter by employment status">
+            <option value="">All statuses</option>
+          </select>
           <a id="add-link" class="button primary" href="/pages/employee-form.html">Add employee</a>
         </div>
 
-        <div class="table-wrap">
+        <div class="table-wrap directory-table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
+                <th>Employee</th>
+                <th>Employee ID</th>
+                <th>Department</th>
+                <th>Email &amp; phone</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -44,6 +50,14 @@
           </table>
         </div>
         <p id="empty" class="empty" hidden>No employees found.</p>
+        <div class="directory-pagination" aria-label="Employee directory pagination">
+          <span id="directory-results" class="directory-results"></span>
+          <div class="directory-page-controls">
+            <button id="previous-page" class="button" type="button" disabled>Previous</button>
+            <span id="page-info" aria-live="polite"></span>
+            <button id="next-page" class="button" type="button" disabled>Next</button>
+          </div>
+        </div>
       </main>
     </div>
   </div>

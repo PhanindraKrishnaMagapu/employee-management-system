@@ -258,18 +258,12 @@ def test_system_admin_cannot_access_employee_or_salary_data(rbac_client):
     assert rbac_client.get("/api/rbac-test/hr-create").status_code == 403
 
 
-def test_hr_admin_needs_payroll_admin_for_salary(rbac_client):
+def test_hr_admin_can_manage_salary_without_payroll_role(rbac_client):
     _login_as(rbac_client, "demo_hr_admin")
 
     assert rbac_client.get("/api/rbac-test/employee/3").status_code == 200
     assert rbac_client.post("/api/rbac-test/hr-create").status_code == 200
-    assert rbac_client.get("/api/rbac-test/salary").status_code == 403
-
-    _add_role("demo_hr_admin", "Payroll Admin")
     assert rbac_client.get("/api/rbac-test/salary").status_code == 200
-
-    _remove_role("demo_hr_admin", "Payroll Admin")
-    assert rbac_client.get("/api/rbac-test/salary").status_code == 403
 
 
 def test_role_change_takes_effect_on_the_next_request(rbac_client):
@@ -306,7 +300,8 @@ def test_demo_roles_are_not_automatically_granted_payroll_admin(rbac_client):
         "demo_sysadmin",
     ):
         assert "Payroll Admin" not in _login_as(rbac_client, username).get_json()["user"]["roles"]
-        assert rbac_client.get("/api/rbac-test/salary").status_code == 403
+        expected = 200 if username == "demo_hr_admin" else 403
+        assert rbac_client.get("/api/rbac-test/salary").status_code == expected
 
 
 def test_multiple_roles_combine_permissions(rbac_client):

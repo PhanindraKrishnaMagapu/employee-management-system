@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Profile - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1>Employee 360</h1>
+        <p class="subtitle">Employee details and related records available to your role.</p>
+
+        <section class="e360-hero" aria-labelledby="employee-name">
+          <div id="employee-avatar" class="e360-avatar" aria-hidden="true"></div>
+          <div class="e360-identity">
+            <h2 id="employee-name">Loading profile…</h2>
+            <div id="employee-meta" class="e360-meta"></div>
+          </div>
+          <div id="employee-hero-actions" class="e360-hero-actions"></div>
+        </section>
+
+        <nav id="employee-profile-tabs" class="e360-tabs" aria-label="Employee profile sections">
+          <a href="#overview" data-tab="overview">Overview</a>
+          <a href="#personal-details" data-tab="personal-details">Personal</a>
+          <a href="#employment-information" data-tab="employment-information">Employment</a>
+          <a href="#salary-information" data-tab="salary-information" data-section="salary-section" hidden>Salary</a>
+          <a href="#skills-information" data-tab="skills-information" data-section="skills-section" hidden>Skills</a>
+          <a href="#hierarchy-information" data-tab="hierarchy-information">Hierarchy</a>
+          <a href="#projects-information" data-tab="projects-information" data-section="projects-section" hidden>Projects</a>
+          <a href="#jml-information" data-tab="jml-information" data-section="jml-section" hidden>JML History</a>
+          <a href="#activity-information" data-tab="activity-information" data-section="activity-section" hidden>Activity</a>
+        </nav>
+
+        <div class="e360-section-grid">
+          <section id="overview" class="e360-card e360-overview" aria-labelledby="overview-heading">
+            <h2 id="overview-heading">Overview</h2>
+            <dl class="e360-overview-grid">
+              <div><dt>Employee ID</dt><dd id="overview-code"></dd></div>
+              <div><dt>Designation</dt><dd id="overview-designation"></dd></div>
+              <div><dt>Department</dt><dd id="overview-department"></dd></div>
+              <div><dt>Employment status</dt><dd id="overview-status"></dd></div>
+            </dl>
+          </section>
+
+          <section id="personal-details" class="e360-card" aria-labelledby="personal-heading">
+            <h2 id="personal-heading">Personal Details</h2>
+            <dl class="e360-detail-grid">
+              <div><dt>Full name</dt><dd id="personal-name"></dd></div>
+              <div><dt>Email</dt><dd id="personal-email"></dd></div>
+              <div><dt>Phone</dt><dd id="personal-phone"></dd></div>
+              <div><dt>Date of birth</dt><dd id="personal-dob"></dd></div>
+              <div><dt>Address</dt><dd>Not available</dd></div>
+              <div><dt>Location</dt><dd id="personal-location"></dd></div>
+            </dl>
+          </section>
+
+          <section id="employment-information" class="e360-card" aria-labelledby="employment-heading">
+            <h2 id="employment-heading">Employment Information</h2>
+            <dl class="e360-detail-grid">
+              <div><dt>Company</dt><dd>Not available</dd></div>
+              <div><dt>Designation</dt><dd id="employment-designation"></dd></div>
+              <div><dt>Department</dt><dd id="employment-department"></dd></div>
+              <div><dt>Joining date</dt><dd id="employment-joining-date"></dd></div>
+              <div><dt>Employment type</dt><dd id="employment-type"></dd></div>
+              <div><dt>Reporting manager</dt><dd id="employment-manager"></dd></div>
+              <div><dt>Employment status</dt><dd id="employment-status"></dd></div>
+              <div><dt>Work location</dt><dd id="employment-location"></dd></div>
+            </dl>
+          </section>
+
+          <section id="salary-section" class="e360-card" aria-labelledby="salary-heading" hidden>
+            <div class="e360-section-heading">
+              <div><h2 id="salary-heading">Salary Information</h2><p class="muted">Confidential compensation history available to your role.</p></div>
+              <a id="salary-add-link" class="button primary" href="#" hidden>Assign salary / revision</a>
+            </div>
+            <dl class="e360-detail-grid e360-salary-current">
+              <div><dt>Annual CTC</dt><dd id="current-salary-value"></dd></div>
+              <div><dt>Monthly gross salary</dt><dd id="current-monthly-gross"></dd></div>
+              <div><dt>Basic salary</dt><dd id="current-monthly-basic"></dd></div>
+              <div><dt>HRA</dt><dd id="current-monthly-hra"></dd></div>
+              <div><dt>Allowances</dt><dd id="current-monthly-allowances"></dd></div>
+              <div><dt>Deductions</dt><dd id="current-monthly-deductions"></dd></div>
+              <div><dt>Net salary</dt><dd>Not calculated by the current system</dd></div>
+              <div><dt>Effective date</dt><dd id="current-salary-effective"></dd></div>
+            </dl>
+            <h3>Salary revision history</h3>
+            <div class="table-wrap e360-table-wrap">
+              <table>
+                <thead><tr><th>Annual CTC</th><th>Monthly gross</th><th>Basic</th><th>HRA</th><th>Allowances</th><th>Deductions</th><th>Effective from</th><th>Effective to</th><th>Actions</th></tr></thead>
+                <tbody id="salary-record-rows"></tbody>
+              </table>
+            </div>
+            <p id="salary-empty" class="e360-empty" hidden>No salary history is available.</p>
+          </section>
+
+          <section id="skills-section" class="e360-card" aria-labelledby="skills-heading" hidden>
+            <h2 id="skills-heading">Skills</h2>
+            <div class="table-wrap e360-table-wrap">
+              <table>
+                <thead><tr><th>Skill</th><th>Proficiency</th><th>Experience</th><th>Last verified</th></tr></thead>
+                <tbody id="skill-record-rows"></tbody>
+              </table>
+            </div>
+            <p id="skills-empty" class="e360-empty" hidden>No skills are assigned.</p>
+          </section>
+
+          <section id="hierarchy-information" class="e360-card" aria-labelledby="hierarchy-heading">
+            <h2 id="hierarchy-heading">Hierarchy</h2>
+            <div class="e360-hierarchy-grid">
+              <div><h3>Reporting chain</h3><ol id="manager-chain" class="e360-person-list"></ol></div>
+              <div><h3>Direct reports</h3><ul id="direct-reports" class="e360-person-list"></ul></div>
+            </div>
+            <div class="e360-tree-heading"><h3>Visible reporting tree</h3><a class="e360-inline-link" href="/pages/hierarchy.html">Open hierarchy</a></div>
+            <div id="employee-reporting-tree" class="e360-reporting-tree"></div>
+          </section>
+
+          <section id="projects-section" class="e360-card" aria-labelledby="projects-heading" hidden>
+            <h2 id="projects-heading">Projects</h2>
+            <div class="table-wrap e360-table-wrap">
+              <table>
+                <thead><tr><th>Project</th><th>Status</th><th>Allocation</th><th>Start</th><th>End</th></tr></thead>
+                <tbody id="project-record-rows"></tbody>
+              </table>
+            </div>
+            <p id="projects-empty" class="e360-empty" hidden>No assigned projects are available.</p>
+          </section>
+
+          <section id="jml-section" class="e360-card" aria-labelledby="jml-heading" hidden>
+            <h2 id="jml-heading">JML History</h2>
+            <div class="table-wrap e360-table-wrap">
+              <table>
+                <thead><tr><th>Event</th><th>Status</th><th>Effective date</th><th>Created</th></tr></thead>
+                <tbody id="jml-record-rows"></tbody>
+              </table>
+            </div>
+            <p id="jml-empty" class="e360-empty" hidden>No JML events are available.</p>
+          </section>
+
+          <section id="activity-section" class="e360-card" aria-labelledby="activity-heading" hidden>
+            <h2 id="activity-heading">Activity History</h2>
+            <p id="activity-note" class="e360-section-note">Employee movement records available through JML history.</p>
+            <ol id="activity-records" class="e360-activity-list"></ol>
+            <p id="activity-empty" class="e360-empty" hidden>No employee movement history is available.</p>
+          </section>
+        </div>
+
+        <p class="e360-back-link"><a class="button" href="/pages/employees.html">Back to employees</a></p>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/employee-profile.js"></script>
+</body>
+</html>

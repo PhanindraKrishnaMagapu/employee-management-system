@@ -17,6 +17,7 @@ from app.routes.employees import employees_bp
 from app.routes.employee_skills import employee_skills_bp
 from app.routes.jml import jml_bp
 from app.routes.projects import projects_bp
+from app.routes.profile import profile_bp
 from app.routes.salaries import salaries_bp
 from app.routes.skills import skills_bp
 from app.routes.ui import ui_bp
@@ -77,6 +78,7 @@ def create_app(config_class=Config):
     app.register_blueprint(employee_skills_bp, url_prefix="/api/employees")
     app.register_blueprint(jml_bp, url_prefix="/api/jml")
     app.register_blueprint(projects_bp, url_prefix="/api/projects")
+    app.register_blueprint(profile_bp, url_prefix="/api")
     app.register_blueprint(salaries_bp, url_prefix="/api/salaries")
     app.register_blueprint(skills_bp, url_prefix="/api/skills")
     app.register_blueprint(ui_bp)
@@ -115,9 +117,9 @@ def create_app(config_class=Config):
 
     @app.after_request
     def prevent_salary_caching(response):
-        """Keep confidential salary responses out of browser caches."""
+        """Keep confidential profile and salary responses out of browser caches."""
 
-        if request.path.startswith("/api/salaries"):
+        if request.path == "/api/profile" or request.path.startswith("/api/salaries"):
             response.headers["Cache-Control"] = "no-store"
         return response
 

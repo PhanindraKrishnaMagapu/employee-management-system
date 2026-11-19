@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Hierarchy - Employee Management System</title>
+  <title>Organizational Hierarchy - Employee Management System</title>
   <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
@@ -18,12 +18,47 @@
         <span id="username"></span>
         <span id="roles" class="roles"></span>
       </header>
-      <main class="content">
+      <main class="content hierarchy-page">
         <div id="message" class="message" hidden></div>
-        <h1>Employee Hierarchy</h1>
-        <p class="subtitle">Reporting relationships visible to your role.</p>
-        <section id="hierarchy" class="panel">
-          <p class="empty">Loading hierarchy...</p>
+        <div class="hierarchy-heading">
+          <div>
+            <p class="eyebrow">PEOPLE &amp; ORGANIZATION</p>
+            <h1>Organizational Hierarchy</h1>
+            <p class="subtitle">Explore employee reporting relationships and management lines.</p>
+          </div>
+          <a class="button secondary" href="/pages/employees.html">Employee directory</a>
+        </div>
+
+        <section class="hierarchy-controls panel" aria-label="Hierarchy controls">
+          <label class="hierarchy-search" for="hierarchy-search">
+            <span class="hierarchy-search-icon" aria-hidden="true"></span>
+            <input type="search" id="hierarchy-search" placeholder="Search name or employee ID" autocomplete="off">
+          </label>
+          <label class="hierarchy-focus-select" for="hierarchy-focus">
+            <span>Focus employee</span>
+            <select id="hierarchy-focus" disabled><option value="">Select an employee</option></select>
+          </label>
+          <button type="button" id="focus-button" class="button primary" disabled>Focus hierarchy</button>
+          <button type="button" id="show-all-button" class="button secondary" disabled>Show all</button>
+        </section>
+        <p id="hierarchy-scope-note" class="hierarchy-scope-note" hidden></p>
+
+        <section id="selected-employee-summary" class="hierarchy-summary panel" aria-live="polite" hidden></section>
+
+        <section class="hierarchy-board panel" aria-label="Employee reporting hierarchy">
+          <div class="hierarchy-board-header">
+            <div>
+              <h2>Reporting structure</h2>
+              <p id="hierarchy-count" class="muted">Loading employee relationships...</p>
+            </div>
+            <div class="hierarchy-tree-actions">
+              <button type="button" id="expand-all-button" class="button small secondary" disabled>Expand all</button>
+              <button type="button" id="collapse-all-button" class="button small secondary" disabled>Collapse all</button>
+            </div>
+          </div>
+          <div id="hierarchy" class="hierarchy-canvas">
+            <p class="empty">Loading hierarchy...</p>
+          </div>
         </section>
       </main>
     </div>

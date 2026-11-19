@@ -25,6 +25,11 @@ SALARY_RECORD_FIELDS = (
     "id",
     "employee_id",
     "annual_salary",
+    "monthly_gross_salary",
+    "monthly_basic_salary",
+    "monthly_hra",
+    "monthly_allowances",
+    "monthly_deductions",
     "currency",
     "effective_from",
     "effective_to",
@@ -49,16 +54,33 @@ SALARY_EMPLOYEE_FIELDS = (
 SALARY_CREATE_FIELDS = frozenset({
     "employee_id",
     "annual_salary",
+    "monthly_gross_salary",
+    "monthly_basic_salary",
+    "monthly_hra",
+    "monthly_allowances",
+    "monthly_deductions",
     "currency",
     "effective_from",
     "effective_to",
 })
 SALARY_UPDATE_FIELDS = frozenset({
     "annual_salary",
+    "monthly_gross_salary",
+    "monthly_basic_salary",
+    "monthly_hra",
+    "monthly_allowances",
+    "monthly_deductions",
     "currency",
     "effective_from",
     "effective_to",
 })
+SALARY_COMPONENT_FIELDS = (
+    "monthly_gross_salary",
+    "monthly_basic_salary",
+    "monthly_hra",
+    "monthly_allowances",
+    "monthly_deductions",
+)
 
 CURRENCY_PATTERN = re.compile(r"^[A-Z]{3}$")
 DEFAULT_CURRENCY = "INR"
@@ -154,6 +176,17 @@ def _annual_salary(value):
     return number
 
 
+def _optional_salary_component(value, field):
+    if value is None:
+        return None
+    try:
+        return _annual_salary(value)
+    except SalaryValidationError as error:
+        raise SalaryValidationError(
+            f"{field} must be a non-negative finite amount with at most two decimal places"
+        ) from error
+
+
 def _currency(value):
     if not isinstance(value, str):
         raise SalaryValidationError("currency must be a three-letter code")
@@ -212,13 +245,16 @@ def validate_create_payload(payload):
         else _currency(payload["currency"])
     )
 
-    return {
+    values = {
         "employee_id": _positive_int(payload["employee_id"], "employee_id"),
         "annual_salary": _annual_salary(payload["annual_salary"]),
         "currency": currency,
         "effective_from": effective_from,
         "effective_to": effective_to,
     }
+    for field in SALARY_COMPONENT_FIELDS:
+        values[field] = _optional_salary_component(payload.get(field), field)
+    return values
 
 
 def validate_update_payload(payload, current):
@@ -243,6 +279,9 @@ def validate_update_payload(payload, current):
         values["effective_to"] = _optional_date(
             payload["effective_to"], "effective_to"
         )
+    for field in SALARY_COMPONENT_FIELDS:
+        if field in payload:
+            values[field] = _optional_salary_component(payload[field], field)
 
     effective_from = values.get("effective_from", current["effective_from"])
     effective_to = values.get("effective_to", current["effective_to"])
@@ -304,22 +343,19 @@ def parse_list_query(args):
 
 
 def salary_employee_scope(user, connection):
-    """Return salary-visible employee ids, or None for the Payroll Admin grant.
+    """Return salary-visible employee ids, or None for an authorized org role.
 
     Payroll Admin deliberately has no general employee permission. Reusing the
     shared employee_scope() would return an empty set and break every salary
-    request, so this helper grants organization-wide salary visibility only to
-    an explicit Payroll Admin salary grant. General employee endpoints are
-    unaffected.
+    request, so Payroll Admin's explicit read grant remains organization-wide.
+    HR Admin also receives organization-wide visibility through the existing
+    employee_scope rule. General employee endpoints are unaffected.
     """
 
     if user is None:
         return frozenset()
 
-    if ROLE_PAYROLL_ADMIN in user.roles and (
-        PERMISSION_SALARY_READ in user.permissions
-        or PERMISSION_SALARY_MANAGE in user.permissions
-    ):
+    if ROLE_PAYROLL_ADMIN in user.roles and PERMISSION_SALARY_READ in user.permissions:
         return None
 
     return employee_scope(user, connection)
@@ -600,6 +636,7 @@ def create_salary(connection, values):
     columns = (
         "employee_id",
         "annual_salary",
+        *SALARY_COMPONENT_FIELDS,
         "currency",
         "effective_from",
         "effective_to",

@@ -30,6 +30,11 @@ RESTRICTED_EMPLOYEE_FIELDS = frozenset({
 })
 SALARY_FIELDS = frozenset({
     "annual_salary",
+    "monthly_gross_salary",
+    "monthly_basic_salary",
+    "monthly_hra",
+    "monthly_allowances",
+    "monthly_deductions",
     "currency",
     "effective_from",
     "effective_to",

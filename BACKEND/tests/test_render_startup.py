@@ -72,7 +72,7 @@ def test_create_demo_app_uses_temp_db_and_provisions_only_demo_login(
     try:
         assert connection.execute(
             "SELECT COUNT(*) FROM schema_migrations"
-        ).fetchone()[0] == 2
+        ).fetchone()[0] == 3
         assert connection.execute(
             "SELECT COUNT(*) FROM salary_records"
         ).fetchone()[0] == 0
@@ -97,7 +97,7 @@ def test_create_demo_app_is_safe_to_run_twice(monkeypatch, tmp_path):
     assert second_snapshot == first_snapshot
     assert first_snapshot[0]["employees"] == 7
     assert first_snapshot[0]["salary_records"] == 0
-    assert first_snapshot[0]["schema_migrations"] == 2
+    assert first_snapshot[0]["schema_migrations"] == 3
     assert first_snapshot[0]["users"] == 8
     assert first_snapshot[1] == [
         ("DEMO001", "Alex", "Morgan", "alex.morgan@example.invalid"),

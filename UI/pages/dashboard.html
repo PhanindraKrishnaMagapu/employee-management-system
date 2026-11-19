@@ -20,34 +20,131 @@
       </header>
       <main class="content">
         <div id="message" class="message" hidden></div>
-        <h1>Dashboard</h1>
-        <p class="subtitle">Employee records available to your role.</p>
+        <section class="dashboard-welcome" aria-labelledby="dashboard-title">
+          <div>
+            <p class="dashboard-eyebrow">People overview</p>
+            <h1 id="dashboard-title">Welcome back, <span id="welcome-name"></span></h1>
+            <p class="dashboard-description">A clear view of the people and workflows available to your role.</p>
+          </div>
+          <time id="dashboard-date" class="dashboard-date"></time>
+        </section>
 
-        <section class="cards">
-          <div class="card">
-            <span class="card-label">Total employees</span>
-            <strong id="total-employees">-</strong>
+        <section id="employee-dashboard" aria-label="Employee overview" hidden>
+          <div class="dashboard-section-heading">
+            <div>
+              <h2>Workforce snapshot</h2>
+              <p>Employee information visible to your role.</p>
+            </div>
+            <span id="access-level" class="dashboard-scope"></span>
           </div>
-          <div class="card">
-            <span class="card-label">Active employees</span>
-            <strong id="active-employees">-</strong>
+
+          <div class="dashboard-kpis">
+            <article class="dashboard-kpi kpi-blue">
+              <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.4-3 2.3-4.5 5.5-4.5s5.1 1.5 5.5 4.5M16 5.5a3 3 0 0 1 0 5.8M17 14.5c2 .6 3.1 2 3.5 4.5"></path></svg></span>
+              <span class="dashboard-kpi-label">Total Employees</span>
+              <strong id="total-employees">—</strong>
+              <span class="dashboard-kpi-note">Employees in your view</span>
+            </article>
+            <article class="dashboard-kpi kpi-green">
+              <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path></svg></span>
+              <span class="dashboard-kpi-label">Active Employees</span>
+              <strong id="active-employees">—</strong>
+              <span class="dashboard-kpi-note">Currently active</span>
+            </article>
+            <article class="dashboard-kpi kpi-amber">
+              <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5m0 4h.01"></path></svg></span>
+              <span class="dashboard-kpi-label">Inactive Employees</span>
+              <strong id="inactive-employees">—</strong>
+              <span class="dashboard-kpi-note">Pre-joining or exited</span>
+            </article>
+            <article class="dashboard-kpi kpi-violet">
+              <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"></rect><rect x="3" y="14" width="8" height="6" rx="1.5"></rect><rect x="14" y="14" width="7" height="6" rx="1.5"></rect></svg></span>
+              <span class="dashboard-kpi-label">Total Departments</span>
+              <strong id="total-departments">—</strong>
+              <span class="dashboard-kpi-note">Represented in your view</span>
+            </article>
+            <article id="pending-jml-kpi" class="dashboard-kpi kpi-rose" hidden>
+              <span class="dashboard-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4m8-4v4M4 10h16m-8 3v4m-2-2h4"></path></svg></span>
+              <span class="dashboard-kpi-label">Pending JML Events</span>
+              <strong id="pending-jml-events">—</strong>
+              <span class="dashboard-kpi-note">Awaiting workflow progress</span>
+            </article>
           </div>
-          <div class="card">
-            <span class="card-label">Your access</span>
-            <strong id="access-level" class="card-value">-</strong>
+
+          <div class="dashboard-analytics">
+            <section class="dashboard-panel" aria-labelledby="department-chart-title">
+              <div class="dashboard-panel-heading">
+                <div>
+                  <h2 id="department-chart-title">Employee distribution</h2>
+                  <p>By department ID in your visible records</p>
+                </div>
+                <span class="dashboard-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10m5 10V4m5 16v-7m5 7V7"></path></svg></span>
+              </div>
+              <div id="department-chart" class="dashboard-chart"></div>
+            </section>
+            <section class="dashboard-panel" aria-labelledby="status-chart-title">
+              <div class="dashboard-panel-heading">
+                <div>
+                  <h2 id="status-chart-title">Employee status</h2>
+                  <p>Distribution across visible employees</p>
+                </div>
+                <span class="dashboard-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 3v9h9M12 12l6.4 6.4"></path></svg></span>
+              </div>
+              <div id="status-chart" class="dashboard-chart"></div>
+            </section>
+          </div>
+
+          <div class="dashboard-lower-grid">
+            <section class="dashboard-panel dashboard-recent" aria-labelledby="recent-employees-title">
+              <div class="dashboard-panel-heading">
+                <div>
+                  <h2 id="recent-employees-title">Recent Employees</h2>
+                  <p>Latest joining dates in your visible records</p>
+                </div>
+                <a id="view-link" class="dashboard-text-link" href="/pages/employees.html">View all</a>
+              </div>
+              <div class="table-wrap dashboard-table-wrap">
+                <table>
+                  <thead><tr><th>Name</th><th>Employee ID</th><th>Department</th><th>Status</th></tr></thead>
+                  <tbody id="recent-employee-rows"></tbody>
+                </table>
+              </div>
+              <p id="recent-employees-empty" class="dashboard-empty" hidden>No employee records are available in your view.</p>
+            </section>
+
+            <section id="recent-activity-section" class="dashboard-panel" aria-labelledby="recent-activity-title" hidden>
+              <div class="dashboard-panel-heading">
+                <div>
+                  <h2 id="recent-activity-title">Recent Activity</h2>
+                  <p>Latest JML events visible to your role</p>
+                </div>
+                <a id="jml-link" class="dashboard-text-link" href="/pages/jml.html">View JML</a>
+              </div>
+              <ul id="recent-activity-list" class="dashboard-activity-list"></ul>
+              <p id="recent-activity-empty" class="dashboard-empty" hidden>No JML activity is available.</p>
+            </section>
           </div>
         </section>
 
-        <section class="panel">
-          <h2>Quick actions</h2>
-          <div class="actions">
-            <a id="view-link" class="button" href="/pages/employees.html">View employees</a>
-            <a id="hierarchy-link" class="button" href="/pages/hierarchy.html">View Hierarchy</a>
-            <a id="skills-link" class="button" href="/pages/skills.html">View Skills</a>
-            <a id="salary-link" class="button" href="/pages/salaries.html">View Salaries</a>
-            <a id="projects-link" class="button" href="/pages/projects.html">View Projects</a>
-            <a id="jml-link" class="button" href="/pages/jml.html">JML events</a>
-            <a id="add-link" class="button primary" href="/pages/employee-form.html">Add employee</a>
+        <section id="no-employee-access" class="dashboard-panel dashboard-no-access" hidden>
+          Employee analytics are not available for your role. Use the shortcuts below to open the modules you can access.
+        </section>
+
+        <section class="dashboard-panel dashboard-shortcuts" aria-labelledby="quick-actions-title">
+          <div class="dashboard-panel-heading">
+            <div>
+              <h2 id="quick-actions-title">Quick actions</h2>
+              <p>Jump to a workspace</p>
+            </div>
+          </div>
+          <div class="dashboard-actions">
+            <a id="add-link" class="dashboard-action" href="/pages/employee-form.html"><span class="dashboard-action-icon" aria-hidden="true">+</span><span>Add Employee</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a>
+            <a id="view-employees-action" class="dashboard-action" href="/pages/employees.html"><span class="dashboard-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><path d="M3 19c.4-3 2.4-4.5 6-4.5s5.6 1.5 6 4.5m2-9a3 3 0 1 0 0-6m1 10c2 .6 3 2.2 3.2 4.5"></path></svg></span><span>View Employees</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a>
+            <a id="hierarchy-link" class="dashboard-action" href="/pages/hierarchy.html"><span class="dashboard-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="5" rx="1"></rect><rect x="2.5" y="16" width="7" height="5" rx="1"></rect><rect x="14.5" y="16" width="7" height="5" rx="1"></rect><path d="M12 8v4m-6 4v-2h12v2"></path></svg></span><span>View Hierarchy</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a>
+            <a id="projects-link" class="dashboard-action" href="/pages/projects.html"><span class="dashboard-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h6l2 2h8v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z"></path><path d="M4 7V5a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v2"></path></svg></span><span>View Projects</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a>
+            <a id="skills-link" class="dashboard-action" href="/pages/skills.html"><span class="dashboard-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6 .8-4.3 4.3 1 6-5.4-2.8-5.4 2.8 1-6-4.3-4.3 6-.8L12 3Z"></path></svg></span><span>View Skills</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a>
+            <a id="jml-action-link" class="dashboard-action" href="/pages/jml.html"><span class="dashboard-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v13H6V4a1 1 0 0 1 1-1Z"></path><path d="M14 3v5h5m-9 4h5m-5 4h5"></path></svg></span><span>JML Events</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a>
+            <a id="salary-link" class="dashboard-action" href="/pages/salaries.html"><span class="dashboard-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 9h18m-13 5h3"></path></svg></span><span>View Salaries</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a>
           </div>
         </section>
       </main>

@@ -98,7 +98,9 @@ def create_rbac_test_blueprint():
         return jsonify({"success": True, "employee_id": employee_id}), 200
 
     @blueprint.route("/api/rbac-test/salary", methods=["GET"])
-    @require_permission(perms.PERMISSION_SALARY_READ)
+    @require_any_permission(
+        perms.PERMISSION_SALARY_READ, perms.PERMISSION_SALARY_MANAGE
+    )
     def salary_endpoint():
         return _ok("Salary permission granted")
 

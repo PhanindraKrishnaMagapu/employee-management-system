@@ -57,12 +57,13 @@ ROLE_PERMISSIONS = {
         PERMISSION_SKILLS_READ,
         PERMISSION_REPORT_READ,
     }),
-    # Employee lifecycle and HR operations; salary requires an extra grant.
+    # HR Admin owns employee lifecycle and salary management.
     ROLE_HR_ADMIN: frozenset({
         PERMISSION_EMPLOYEE_READ_ALL,
         PERMISSION_EMPLOYEE_CREATE,
         PERMISSION_EMPLOYEE_UPDATE,
         PERMISSION_EMPLOYEE_ARCHIVE,
+        PERMISSION_SALARY_MANAGE,
         PERMISSION_ORG_READ,
         PERMISSION_JML_MANAGE,
         PERMISSION_PROJECT_READ,
@@ -109,10 +110,9 @@ ROLE_PERMISSIONS = {
         PERMISSION_ROLE_MANAGE,
         PERMISSION_AUDIT_READ,
     }),
-    # Explicit salary grant only; never assigned automatically.
+    # Read-only salary visibility; changes are reserved for HR Admin.
     ROLE_PAYROLL_ADMIN: frozenset({
         PERMISSION_SALARY_READ,
-        PERMISSION_SALARY_MANAGE,
     }),
 }
 

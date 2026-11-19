@@ -121,21 +121,20 @@ def test_system_admin_has_no_employee_or_salary_access():
     }
 
 
-def test_hr_admin_has_no_salary_without_payroll_admin():
+def test_hr_admin_can_manage_salary():
     granted = perms.permissions_for_roles(perms.ROLE_HR_ADMIN)
 
     assert perms.PERMISSION_EMPLOYEE_CREATE in granted
     assert perms.PERMISSION_EMPLOYEE_ARCHIVE in granted
+    assert perms.PERMISSION_SALARY_MANAGE in granted
     assert perms.PERMISSION_SALARY_READ not in granted
-    assert perms.PERMISSION_SALARY_MANAGE not in granted
 
 
-def test_payroll_admin_receives_only_the_intended_salary_permissions():
+def test_payroll_admin_receives_read_only_salary_permission():
     granted = perms.permissions_for_roles(perms.ROLE_PAYROLL_ADMIN)
 
     assert granted == frozenset({
         perms.PERMISSION_SALARY_READ,
-        perms.PERMISSION_SALARY_MANAGE,
     })
 
 
@@ -292,6 +291,22 @@ def _make_legacy_database():
     try:
         connection.execute("DROP INDEX IF EXISTS idx_users_employee_id")
         connection.execute("ALTER TABLE users DROP COLUMN employee_id")
+        for column in (
+            "monthly_gross_salary",
+            "monthly_basic_salary",
+            "monthly_hra",
+            "monthly_allowances",
+            "monthly_deductions",
+        ):
+            connection.execute(
+                f"ALTER TABLE salary_records DROP COLUMN {column}"
+            )
+        connection.execute(
+            "INSERT INTO salary_records "
+            "(employee_id, annual_salary, currency, effective_from) "
+            "VALUES (?, ?, ?, ?)",
+            (7, 975000, "INR", "2025-01-01"),
+        )
         connection.execute("DELETE FROM roles WHERE name = 'Payroll Admin'")
         connection.execute("DROP TABLE IF EXISTS schema_migrations")
         connection.execute(
@@ -319,6 +334,10 @@ def _snapshot():
             "employees": [tuple(row) for row in connection.execute(
                 "SELECT * FROM employees ORDER BY id"
             )],
+            "salary_records": [tuple(row) for row in connection.execute(
+                "SELECT id, employee_id, annual_salary, currency, "
+                "effective_from, effective_to FROM salary_records ORDER BY id"
+            )],
             "roles": [tuple(row) for row in connection.execute(
                 "SELECT * FROM roles ORDER BY id"
             )],
@@ -340,12 +359,14 @@ def test_migration_is_additive_idempotent_and_preserves_data(isolated_db):
     assert first["applied"] == [
         "001_rbac_scope_links",
         "002_project_manager_jml_scope",
+        "003_salary_structure",
     ]
     assert first["skipped"] == []
     assert "schema_migrations" not in before["tables"]
     assert set(after_first["tables"]) == set(before["tables"]) | {"schema_migrations"}
     assert after_first["users"] == before["users"]
     assert after_first["employees"] == before["employees"]
+    assert after_first["salary_records"] == before["salary_records"]
     assert after_first["user_roles"] == before["user_roles"]
     assert {row for row in after_first["roles"] if row[1] == perms.ROLE_PAYROLL_ADMIN}
     assert _roles_for("demo_ceo") == [perms.ROLE_CEO]
@@ -353,13 +374,21 @@ def test_migration_is_additive_idempotent_and_preserves_data(isolated_db):
     second = apply_migrations()
     assert second == {
         "applied": [],
-        "skipped": ["001_rbac_scope_links", "002_project_manager_jml_scope"],
+        "skipped": [
+            "001_rbac_scope_links",
+            "002_project_manager_jml_scope",
+            "003_salary_structure",
+        ],
     }
     assert _snapshot() == after_first
 
     connection = get_connection()
     try:
         columns = {row["name"] for row in connection.execute("PRAGMA table_info(users)")}
+        salary_columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(salary_records)")
+        }
         indexes = {row["name"] for row in connection.execute("PRAGMA index_list(users)")}
         fks = list(connection.execute("PRAGMA foreign_key_list(users)"))
         payroll_count = connection.execute(
@@ -369,6 +398,13 @@ def test_migration_is_additive_idempotent_and_preserves_data(isolated_db):
         connection.close()
 
     assert "employee_id" in columns
+    assert {
+        "monthly_gross_salary",
+        "monthly_basic_salary",
+        "monthly_hra",
+        "monthly_allowances",
+        "monthly_deductions",
+    } <= salary_columns
     assert "idx_users_employee_id" in indexes
     assert any(fk[2] == "employees" and fk[3] == "employee_id" for fk in fks)
     assert payroll_count == 1
