@@ -173,6 +173,61 @@ def apply_migrations():
     return {"applied": applied, "skipped": skipped}
 
 
+def provision_hosted_demo_user():
+    """Create/update the single hosted demo login from required env vars."""
+
+    username = os.environ.get("DEMO_ADMIN_USERNAME", "").strip()
+    email = os.environ.get("DEMO_ADMIN_EMAIL", "").strip()
+    password = os.environ.get("DEMO_ADMIN_PASSWORD", "")
+    if not username or not email or not password:
+        raise RuntimeError(
+            "DEMO_ADMIN_USERNAME, DEMO_ADMIN_EMAIL, and "
+            "DEMO_ADMIN_PASSWORD must be set for the hosted demo"
+        )
+    if username in DEMO_USERNAMES:
+        raise ValueError("DEMO_ADMIN_USERNAME must not reuse a seeded demo username")
+    if len(password) < 12:
+        raise ValueError("DEMO_ADMIN_PASSWORD must contain at least 12 characters")
+
+    from app.services.auth import hash_password
+
+    connection = get_connection()
+    try:
+        role = connection.execute(
+            "SELECT id FROM roles WHERE name = ?", ("HR Admin",)
+        ).fetchone()
+        if role is None:
+            raise RuntimeError("HR Admin role is missing from the initialized demo DB")
+
+        connection.execute("BEGIN IMMEDIATE")
+        connection.execute(
+            """
+            INSERT INTO users (username, email, password_hash, is_active, employee_id)
+            VALUES (?, ?, ?, 1, NULL)
+            ON CONFLICT(username) DO UPDATE SET
+                email = excluded.email,
+                password_hash = excluded.password_hash,
+                is_active = 1,
+                employee_id = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (username, email, hash_password(password)),
+        )
+        user = connection.execute(
+            "SELECT id FROM users WHERE username = ?", (username,)
+        ).fetchone()
+        connection.execute(
+            "INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)",
+            (user["id"], role["id"]),
+        )
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
 def is_valid_password_hash(value):
     """Return True when a stored value looks like an existing password hash.
 
