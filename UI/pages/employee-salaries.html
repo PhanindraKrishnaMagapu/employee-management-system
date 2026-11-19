@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Salaries - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1>Employee Salary History</h1>
+        <p class="subtitle">Salary periods ordered from the newest effective date.</p>
+
+        <section class="panel">
+          <h2>Employee</h2>
+          <div id="employee-summary" class="skill-summary"></div>
+          <div class="actions">
+            <a id="add-salary-link" class="button primary" href="/pages/salary-form.html">Add salary</a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Salary periods</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Annual salary</th>
+                  <th>Currency</th>
+                  <th>Effective from</th>
+                  <th>Effective to</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="salary-rows"></tbody>
+            </table>
+          </div>
+          <p id="salary-empty" class="empty" hidden>No salary records for this employee.</p>
+        </section>
+
+        <p><a class="button" href="/pages/salaries.html">Back to salaries</a></p>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/employee-salaries.js"></script>
+</body>
+</html>

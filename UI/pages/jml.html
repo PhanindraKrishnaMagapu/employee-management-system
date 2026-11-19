@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JML Events - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1>JML Events</h1>
+        <p class="subtitle">Joiner, Mover and Leaver workflows visible to your role.</p>
+
+        <div class="toolbar">
+          <input id="search" type="search" placeholder="Search events or employees" aria-label="Search JML events">
+          <a id="create-link" class="button primary" href="/pages/jml-form.html">Create JML Event</a>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Employee</th>
+                <th>Effective date</th>
+                <th>Status</th>
+                <th>Checklist</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="event-rows"></tbody>
+          </table>
+        </div>
+        <p id="empty" class="empty" hidden>No JML events found.</p>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/jml.js"></script>
+</body>
+</html>

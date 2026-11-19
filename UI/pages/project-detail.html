@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Detail - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1>Project Detail</h1>
+        <p class="subtitle">Project summary, assigned employees, and allocation details.</p>
+
+        <section class="panel">
+          <h2>Summary</h2>
+          <div id="project-summary" class="project-summary"></div>
+          <a id="edit-link" class="button" href="#">Edit project</a>
+        </section>
+
+        <section class="panel">
+          <h2>Assigned employees</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Code</th>
+                  <th>Start date</th>
+                  <th>End date</th>
+                  <th>Allocation</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="assignment-rows"></tbody>
+            </table>
+          </div>
+          <p id="assignment-empty" class="empty" hidden>No employees are assigned to this project.</p>
+
+          <div id="assignment-panel" class="assignment-form" hidden>
+            <h2>Assign an employee</h2>
+            <form id="assignment-form">
+              <div class="form-grid">
+                <label>
+                  Employee *
+                  <select id="employee" name="employee_id" required>
+                    <option value="">Select an employee</option>
+                  </select>
+                </label>
+                <label>
+                  Start date *
+                  <input id="assignment-start" name="start_date" type="date" required>
+                </label>
+                <label>
+                  End date
+                  <input id="assignment-end" name="end_date" type="date">
+                </label>
+                <label>
+                  Allocation percentage *
+                  <input id="allocation" name="allocation_percentage" type="number" min="1" max="100" step="1" value="100" required>
+                </label>
+              </div>
+              <div class="form-actions">
+                <button type="submit" id="assign-button">Assign employee</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <p><a class="button" href="/pages/projects.html">Back to projects</a></p>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/project-detail.js"></script>
+</body>
+</html>

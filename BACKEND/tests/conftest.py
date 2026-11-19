@@ -31,6 +31,17 @@ def isolated_db(tmp_path, monkeypatch):
     return database_path
 
 
+@pytest.fixture(autouse=True)
+def reset_login_throttle():
+    """Keep login-throttling state from leaking between tests."""
+
+    from app.services.auth import reset_login_throttling
+
+    reset_login_throttling()
+    yield
+    reset_login_throttling()
+
+
 @pytest.fixture
 def app(isolated_db, monkeypatch):
     """Create a Flask app whose requests use the isolated temp database."""

@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request, session
 
 from app.auth.context import get_current_user
 from app.auth.decorators import require_authentication
+from app.services import auth as auth_service
 from app.services.auth import authenticate_user
 
 
@@ -42,14 +43,23 @@ def login():
             "message": "Username and password are required"
         }), 400
 
+    client_ip = request.remote_addr or "unknown"
+    if auth_service.is_login_throttled(client_ip, username):
+        return jsonify({
+            "success": False,
+            "message": "Too many login attempts. Please try again later."
+        }), 429
+
     user = authenticate_user(username, password)
 
     if not user:
+        auth_service.record_login_failure(client_ip, username)
         return jsonify({
             "success": False,
             "message": "Invalid username or password"
         }), 401
 
+    auth_service.clear_login_failures(client_ip, username)
     session.clear()
     # Apply the configured PERMANENT_SESSION_LIFETIME to the login cookie.
     session.permanent = True

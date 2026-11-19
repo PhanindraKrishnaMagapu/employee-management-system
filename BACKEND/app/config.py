@@ -16,6 +16,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Development-only fallback. Production startup refuses this value.
 DEFAULT_SECRET_KEY = "dev-only-change-me"
 
+# Only these explicit values are treated as local development environments.
+# Anything else (including unset) requires a real configured secret.
+DEVELOPMENT_ENVIRONMENTS = frozenset({
+    "development",
+    "dev",
+    "local",
+    "test",
+    "testing",
+})
+
 
 def _database_path():
     """Return an absolute path to the SQLite file.
@@ -31,12 +41,24 @@ def _database_path():
     return str(path)
 
 
+def environment_name():
+    """Return the normalized FLASK_ENV value (defaults to development)."""
+
+    return os.environ.get("FLASK_ENV", "development").strip().lower()
+
+
+def is_development():
+    """Return True only for an explicitly recognized development environment."""
+
+    return environment_name() in DEVELOPMENT_ENVIRONMENTS
+
+
 def is_production():
     """Return True when the environment is explicitly marked as production.
 
     Read at call time so shell changes and test monkeypatching are respected.
     """
-    return os.environ.get("FLASK_ENV", "development").strip().lower() == "production"
+    return environment_name() == "production"
 
 
 class Config:

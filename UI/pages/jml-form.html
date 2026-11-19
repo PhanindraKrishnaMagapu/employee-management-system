@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create JML Event - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1>Create JML Event</h1>
+        <p class="subtitle">Only HR Admin users can create lifecycle events.</p>
+
+        <form id="jml-form">
+          <div class="form-grid">
+            <label>
+              Event type *
+              <select id="event-type" name="event_type" required>
+                <option value="Joiner">Joiner</option>
+                <option value="Mover">Mover</option>
+                <option value="Leaver">Leaver</option>
+              </select>
+            </label>
+            <label>
+              Employee *
+              <select id="employee" name="employee_id" required>
+                <option value="">Select an employee</option>
+              </select>
+            </label>
+            <label>
+              Effective date *
+              <input id="effective-date" name="effective_date" type="date" required>
+            </label>
+            <label>
+              <span id="reason-label-text">Reason (optional)</span>
+              <input id="reason" name="reason" type="text">
+            </label>
+          </div>
+
+          <section id="mover-fields" class="form-grid" hidden>
+            <h2>Mover changes</h2>
+            <label>
+              Department ID *
+              <input id="field-department_id" type="number" min="1" required>
+            </label>
+            <label>
+              Designation ID *
+              <input id="field-designation_id" type="number" min="1" required>
+            </label>
+            <label>
+              Manager ID
+              <input id="field-manager_id" type="number" min="1">
+            </label>
+            <label>
+              Location
+              <input id="field-location" type="text">
+            </label>
+          </section>
+
+          <div class="form-actions">
+            <button type="submit" id="submit-button">Create event</button>
+            <a class="button" href="/pages/jml.html">Cancel</a>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/jml-form.js"></script>
+</body>
+</html>

@@ -10,13 +10,51 @@
   showFlash();
 
   const viewLink = document.getElementById("view-link");
+  const hierarchyLink = document.getElementById("hierarchy-link");
+  const skillsLink = document.getElementById("skills-link");
+  const salaryLink = document.getElementById("salary-link");
+  const projectsLink = document.getElementById("projects-link");
+  const jmlLink = document.getElementById("jml-link");
   const addLink = document.getElementById("add-link");
 
+  if (!canReadProjects(user)) {
+    projectsLink.hidden = true;
+  }
+
+  if (!canReadSkills(user)) {
+    skillsLink.hidden = true;
+  }
+
+  if (!canReadSalary(user)) {
+    salaryLink.hidden = true;
+  }
+
   if (!canRead(user)) {
-    document.getElementById("access-level").textContent = "No employee access";
+    const otherAccess = [];
+    if (canReadProjects(user)) {
+      otherAccess.push("projects");
+    }
+    if (canReadSkills(user)) {
+      otherAccess.push("skills");
+    }
+    if (canReadSalary(user)) {
+      otherAccess.push("salary");
+    }
+
+    document.getElementById("access-level").textContent = otherAccess.length
+      ? "No employee access; " + otherAccess.join(", ")
+      : "No employee access";
     viewLink.hidden = true;
+    hierarchyLink.hidden = true;
+    skillsLink.hidden = true;
+    jmlLink.hidden = true;
     addLink.hidden = true;
-    showMessage("error", "Your role does not grant access to employee records.");
+    if (otherAccess.length === 0) {
+      showMessage(
+        "error",
+        "Your role does not grant access to employee records, projects, skills, or salary."
+      );
+    }
     return;
   }
 
@@ -26,6 +64,9 @@
 
   if (!canCreate(user)) {
     addLink.hidden = true;
+  }
+  if (!canReadJml(user)) {
+    jmlLink.hidden = true;
   }
 
   const result = await apiGet("/api/employees");

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Form - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1 id="page-title">Add Skill</h1>
+        <p id="page-subtitle" class="subtitle">Skill details visible to authorized roles.</p>
+
+        <form id="skill-form" class="skill-form">
+          <div class="form-grid">
+            <label>
+              Skill name *
+              <input id="skill-name" name="name" type="text" maxlength="150" required>
+            </label>
+            <label>
+              Description
+              <textarea id="description" name="description" rows="4"></textarea>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="submit-button">Add skill</button>
+            <a class="button" href="/pages/skills.html">Cancel</a>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/skill-form.js"></script>
+</body>
+</html>

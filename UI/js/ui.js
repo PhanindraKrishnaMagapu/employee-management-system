@@ -63,6 +63,11 @@ function initShell(user, active) {
   const links = [
     { key: "dashboard", label: "Dashboard", href: "/pages/dashboard.html", show: true },
     { key: "employees", label: "Employees", href: "/pages/employees.html", show: canRead(user) },
+    { key: "hierarchy", label: "Hierarchy", href: "/pages/hierarchy.html", show: canRead(user) },
+    { key: "skills", label: "Skills", href: "/pages/skills.html", show: canReadSkills(user) },
+    { key: "salaries", label: "Salaries", href: "/pages/salaries.html", show: canReadSalary(user) },
+    { key: "projects", label: "Projects", href: "/pages/projects.html", show: canReadProjects(user) },
+    { key: "jml", label: "JML", href: "/pages/jml.html", show: canReadJml(user) },
     { key: "add", label: "Add Employee", href: "/pages/employee-form.html", show: canCreate(user) },
   ].filter(function (item) {
     return item.show;

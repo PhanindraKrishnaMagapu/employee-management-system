@@ -5,6 +5,12 @@
   box-sizing: border-box;
 }
 
+/* Keep the hidden attribute authoritative for controls that set a display
+   value, such as .button links and panels toggled by role-based JS. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family: "Segoe UI", Tahoma, sans-serif;
@@ -155,7 +161,8 @@ button:disabled {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   padding: 0.55rem 0.65rem;
   border: 1px solid #c9d2dd;
@@ -278,6 +285,269 @@ tbody tr:last-child td {
   color: #5b6675;
 }
 
+/* Employee hierarchy */
+.tree,
+.tree ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.tree > li {
+  padding-left: 0;
+}
+
+.tree-item {
+  margin: 0.35rem 0;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ee;
+  border-radius: 4px;
+}
+
+.tree-toggle {
+  width: 1.75rem;
+  padding: 0.15rem;
+  flex-shrink: 0;
+}
+
+.tree-spacer {
+  width: 1.75rem;
+  flex-shrink: 0;
+}
+
+.tree-label {
+  font-weight: 600;
+}
+
+.tree-meta {
+  color: #5b6675;
+  font-size: 0.9rem;
+}
+
+.tree-status {
+  margin-left: auto;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #5b6675;
+  font-size: 0.8rem;
+}
+
+.tree-children[hidden] {
+  display: none;
+}
+
+/* JML */
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #5b6675;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.jml-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.jml-summary > div {
+  min-width: 10rem;
+  padding: 0.6rem 0.75rem;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ee;
+  border-radius: 4px;
+}
+
+.jml-summary .label {
+  display: block;
+  color: #5b6675;
+  font-size: 0.8rem;
+}
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checklist li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #e3e8ee;
+}
+
+.checklist li:last-child {
+  border-bottom: 0;
+}
+
+.checklist .title {
+  font-weight: 600;
+}
+
+.checklist .description {
+  flex: 1 1 16rem;
+  color: #5b6675;
+  font-size: 0.9rem;
+}
+
+.checklist .actions-cell {
+  margin-left: auto;
+}
+
+.status-control {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  max-width: 28rem;
+}
+
+.status-control label {
+  flex: 1 1 12rem;
+  font-size: 0.9rem;
+}
+
+/* Projects */
+.project-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.project-summary > div {
+  min-width: 10rem;
+  padding: 0.6rem 0.75rem;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ee;
+  border-radius: 4px;
+}
+
+.project-summary .label {
+  display: block;
+  color: #5b6675;
+  font-size: 0.8rem;
+}
+
+.project-summary .description {
+  flex: 1 1 100%;
+}
+
+.assignment-form {
+  margin-top: 1.25rem;
+}
+
+.assignment-form .form-grid {
+  margin-bottom: 0.75rem;
+}
+
+.allocation-cell {
+  white-space: nowrap;
+}
+
+/* Skills */
+.skill-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.skill-summary > div {
+  min-width: 10rem;
+  padding: 0.6rem 0.75rem;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ee;
+  border-radius: 4px;
+}
+
+.skill-summary .label {
+  display: block;
+  color: #5b6675;
+  font-size: 0.8rem;
+}
+
+.skill-filter {
+  max-width: 14rem;
+}
+
+.skill-assignment-form {
+  margin-top: 1.25rem;
+}
+
+.skill-assignment-form .form-grid {
+  margin-bottom: 0.75rem;
+}
+
+.assignment-control {
+  width: auto;
+  min-width: 7rem;
+}
+
+.assignment-control[type="date"] {
+  min-width: 9rem;
+}
+
+/* Salaries */
+.salary-filters select {
+  min-width: 14rem;
+}
+
+.salary-filters input[type="text"] {
+  flex: 0 0 auto;
+  width: 8rem;
+}
+
+.salary-filters input[type="date"] {
+  flex: 0 0 auto;
+  width: 10rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.page-info {
+  color: #5b6675;
+  font-size: 0.9rem;
+}
+
+.employee-readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.6rem 0.75rem;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ee;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.employee-readonly .label {
+  color: #5b6675;
+  font-size: 0.8rem;
+}
+
 /* Forms */
 .form-grid {
   display: grid;
@@ -363,5 +633,33 @@ tbody tr:last-child td {
 
   .content {
     padding: 1rem;
+  }
+
+  .tree,
+  .tree ul {
+    padding-left: 0.75rem;
+  }
+
+  .project-summary > div {
+    min-width: 100%;
+  }
+
+  .project-form .form-actions,
+  .assignment-form .form-actions,
+  .skill-form .form-actions,
+  .skill-assignment-form .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .project-form .form-actions button,
+  .project-form .form-actions .button,
+  .assignment-form .form-actions button,
+  .assignment-form .form-actions .button,
+  .skill-form .form-actions button,
+  .skill-form .form-actions .button,
+  .skill-assignment-form .form-actions button,
+  .skill-assignment-form .form-actions .button {
+    width: 100%;
   }
 }

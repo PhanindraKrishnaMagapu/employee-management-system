@@ -26,11 +26,29 @@ const SELF_UPDATE_FIELDS = ["phone"];
 // Mirrors BACKEND/app/auth/permissions.py so controls can be hidden early.
 // It is not a security boundary; the backend enforces the real permissions.
 const ROLE_CAPABILITIES = {
-  CEO: ["readAll"],
-  "HR Admin": ["readAll", "create", "updateFull", "archive"],
-  "HR Executive": ["readScoped", "updateLimited"],
-  "Department Manager": ["readScoped", "updateLimited"],
-  Employee: ["readScoped", "updateSelf"],
+  CEO: ["readAll", "jmlRead", "projectRead", "skillsRead"],
+  "HR Admin": [
+    "readAll",
+    "create",
+    "updateFull",
+    "archive",
+    "jmlManage",
+    "projectRead",
+    "projectManage",
+    "employeePicker",
+    "skillsManage",
+  ],
+  "HR Executive": ["readScoped", "updateLimited", "jmlRead", "skillsRead"],
+  "Department Manager": [
+    "readScoped",
+    "updateLimited",
+    "jmlRead",
+    "projectRead",
+    "skillsRead",
+  ],
+  "Project Manager": ["projectRead", "projectManage", "employeePicker"],
+  Employee: ["readScoped", "updateSelf", "skillsRead"],
+  "Payroll Admin": ["salaryRead", "salaryManage"],
 };
 
 function getStoredUser() {
@@ -69,6 +87,48 @@ function canCreate(user) {
 
 function canArchive(user) {
   return can(user, "archive");
+}
+
+// HR Admin has jml:manage but not jml:read, so manage implies read access.
+function canReadJml(user) {
+  return can(user, "jmlRead") || can(user, "jmlManage");
+}
+
+function canManageJml(user) {
+  return can(user, "jmlManage");
+}
+
+// Project access is separate from general employee access. Project Managers
+// intentionally do not receive readAll/readScoped/jmlRead capabilities here.
+function canReadProjects(user) {
+  return can(user, "projectRead") || can(user, "projectManage");
+}
+
+function canManageProjects(user) {
+  return can(user, "projectManage");
+}
+
+function canSelectProjectEmployees(user) {
+  return can(user, "employeePicker");
+}
+
+// HR Admin has skills:manage but not skills:read, so manage implies read access.
+function canReadSkills(user) {
+  return can(user, "skillsRead") || can(user, "skillsManage");
+}
+
+function canManageSkills(user) {
+  return can(user, "skillsManage");
+}
+
+// Salary access is intentionally separate from employee access. Payroll Admin
+// has salary:manage but not salary:read, so manage implies read access.
+function canReadSalary(user) {
+  return can(user, "salaryRead") || can(user, "salaryManage");
+}
+
+function canManageSalary(user) {
+  return can(user, "salaryManage");
 }
 
 function canEdit(user) {

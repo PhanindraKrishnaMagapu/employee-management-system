@@ -34,6 +34,12 @@ function renderRows() {
       const archive = canArchive(pageUser)
         ? '<button type="button" class="link danger" data-archive="' + id + '">Archive</button>'
         : "";
+      const skills = canReadSkills(pageUser)
+        ? '<a class="link" href="/pages/employee-skills.html?employee_id=' + id + '">Skills</a>'
+        : "";
+      const salary = canReadSalary(pageUser)
+        ? '<a class="link" href="/pages/employee-salaries.html?employee_id=' + id + '">Salary</a>'
+        : "";
 
       return (
         "<tr>" +
@@ -42,7 +48,7 @@ function renderRows() {
         "<td>" + escapeHtml(employee.official_email) + "</td>" +
         "<td>" + escapeHtml(employee.phone || "-") + "</td>" +
         "<td>" + escapeHtml(employee.employment_status) + "</td>" +
-        '<td class="actions-cell">' + edit + " " + archive + "</td>" +
+        '<td class="actions-cell">' + edit + " " + skills + " " + salary + " " + archive + "</td>" +
         "</tr>"
       );
     })

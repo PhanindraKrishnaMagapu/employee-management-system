@@ -210,6 +210,39 @@ def _reference_exists(connection, table, record_id, field, require_active=False)
         raise EmployeeValidationError(f"{field} does not reference an active record")
 
 
+MAX_MANAGER_CHAIN_DEPTH = 100
+
+
+def _creates_manager_cycle(connection, employee_id, manager_id):
+    """Return True when assigning manager_id would create a reporting cycle.
+
+    Walks upward from the proposed manager. Reaching the employee itself means
+    a direct or indirect cycle; encountering a repeated id means the stored
+    chain is already corrupt. The depth cap guarantees termination.
+    """
+
+    if manager_id is None:
+        return False
+    if employee_id is not None and manager_id == employee_id:
+        return True
+
+    seen = set()
+    current = manager_id
+    for _ in range(MAX_MANAGER_CHAIN_DEPTH):
+        if current is None:
+            return False
+        if employee_id is not None and current == employee_id:
+            return True
+        if current in seen:
+            return True
+        seen.add(current)
+        row = connection.execute(
+            "SELECT manager_id FROM employees WHERE id = ?", (current,)
+        ).fetchone()
+        current = row["manager_id"] if row is not None else None
+    return True
+
+
 def _validate_references(connection, values, employee_id=None):
     if "department_id" in values:
         _reference_exists(
@@ -224,6 +257,16 @@ def _validate_references(connection, values, employee_id=None):
         if employee_id is not None and manager_id == employee_id:
             raise EmployeeValidationError("manager_id cannot be the employee itself")
         _reference_exists(connection, "employees", manager_id, "manager_id")
+        if _creates_manager_cycle(connection, employee_id, manager_id):
+            raise EmployeeValidationError(
+                "manager_id would create a circular reporting relationship"
+            )
+
+
+def validate_references(connection, values, employee_id=None):
+    """Public reference/cycle validation for callers such as JML."""
+
+    return _validate_references(connection, values, employee_id)
 
 
 def _select_columns():

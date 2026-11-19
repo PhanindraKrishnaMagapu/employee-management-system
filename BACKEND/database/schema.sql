@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS projects (
     status TEXT NOT NULL DEFAULT 'Planned',
     start_date TEXT,
     end_date TEXT,
+    manager_id INTEGER REFERENCES employees(id),
     is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -175,6 +176,7 @@ CREATE TABLE IF NOT EXISTS jml_events (
     event_type TEXT NOT NULL CHECK (event_type IN ('Joiner', 'Mover', 'Leaver')),
     effective_date TEXT NOT NULL,
     reason TEXT,
+    pending_changes TEXT,
     status TEXT NOT NULL DEFAULT 'Pending',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -222,6 +224,9 @@ CREATE INDEX IF NOT EXISTS idx_employees_status
 
 CREATE INDEX IF NOT EXISTS idx_employee_history_employee
     ON employee_history(employee_id);
+
+CREATE INDEX IF NOT EXISTS idx_projects_manager
+    ON projects(manager_id);
 
 CREATE INDEX IF NOT EXISTS idx_project_assignments_employee
     ON project_assignments(employee_id);

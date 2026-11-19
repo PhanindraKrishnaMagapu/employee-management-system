@@ -337,7 +337,10 @@ def test_migration_is_additive_idempotent_and_preserves_data(isolated_db):
     first = apply_migrations()
     after_first = _snapshot()
 
-    assert first["applied"] == ["001_rbac_scope_links"]
+    assert first["applied"] == [
+        "001_rbac_scope_links",
+        "002_project_manager_jml_scope",
+    ]
     assert first["skipped"] == []
     assert "schema_migrations" not in before["tables"]
     assert set(after_first["tables"]) == set(before["tables"]) | {"schema_migrations"}
@@ -348,7 +351,10 @@ def test_migration_is_additive_idempotent_and_preserves_data(isolated_db):
     assert _roles_for("demo_ceo") == [perms.ROLE_CEO]
 
     second = apply_migrations()
-    assert second == {"applied": [], "skipped": ["001_rbac_scope_links"]}
+    assert second == {
+        "applied": [],
+        "skipped": ["001_rbac_scope_links", "002_project_manager_jml_scope"],
+    }
     assert _snapshot() == after_first
 
     connection = get_connection()

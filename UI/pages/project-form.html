@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Form - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1 id="page-title">Create Project</h1>
+        <p id="page-subtitle" class="subtitle">Project details visible to authorized roles.</p>
+
+        <form id="project-form" class="project-form">
+          <div class="form-grid">
+            <label>
+              Project code *
+              <input id="project-code" name="project_code" type="text" maxlength="50" required>
+            </label>
+            <label>
+              Project name *
+              <input id="project-name" name="name" type="text" maxlength="150" required>
+            </label>
+            <label>
+              Status
+              <select id="status" name="status">
+                <option value="Planned">Planned</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+            </label>
+            <label>
+              Start date
+              <input id="start-date" name="start_date" type="date">
+            </label>
+            <label>
+              End date
+              <input id="end-date" name="end_date" type="date">
+            </label>
+            <label>
+              Description
+              <textarea id="description" name="description" rows="4"></textarea>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="submit-button">Create project</button>
+            <a class="button" href="/pages/projects.html">Cancel</a>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/project-form.js"></script>
+</body>
+</html>

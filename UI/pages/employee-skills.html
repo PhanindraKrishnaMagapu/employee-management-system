@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Skills - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1>Employee Skills</h1>
+        <p class="subtitle">Assigned skills, proficiency, and experience.</p>
+
+        <section class="panel">
+          <h2>Employee</h2>
+          <div id="employee-summary" class="skill-summary"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Assigned skills</h2>
+          <div class="toolbar">
+            <input id="skill-search" type="search" placeholder="Search assigned skills" aria-label="Search assigned skills">
+            <select id="level-filter" class="skill-filter" aria-label="Filter by proficiency">
+              <option value="">All proficiency levels</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+              <option value="Expert">Expert</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Skill</th>
+                  <th>Description</th>
+                  <th>Proficiency</th>
+                  <th>Experience</th>
+                  <th>Last verified</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="skill-rows"></tbody>
+            </table>
+          </div>
+          <p id="assignment-empty" class="empty" hidden>No skills are assigned to this employee.</p>
+
+          <div id="assignment-panel" class="skill-assignment-form" hidden>
+            <h2>Assign a skill</h2>
+            <form id="assignment-form">
+              <div class="form-grid">
+                <label>
+                  Skill *
+                  <select id="skill" name="skill_id" required>
+                    <option value="">Select a skill</option>
+                  </select>
+                </label>
+                <label>
+                  Proficiency *
+                  <select id="proficiency" name="proficiency_level" required>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate" selected>Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="Expert">Expert</option>
+                  </select>
+                </label>
+                <label>
+                  Experience (years)
+                  <input id="experience" name="experience_years" type="number" min="0" step="0.5" value="0">
+                </label>
+                <label>
+                  Last verified
+                  <input id="last-verified" name="last_verified" type="date">
+                </label>
+              </div>
+              <div class="form-actions">
+                <button type="submit" id="assign-button">Assign skill</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <p><a class="button" href="/pages/employees.html">Back to employees</a></p>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/employee-skills.js"></script>
+</body>
+</html>

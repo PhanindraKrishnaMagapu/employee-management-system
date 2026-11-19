@@ -370,3 +370,45 @@ def test_delete_archives_employee_and_requires_archive_permission(client):
     _link("demo_employee", 7)
     _login_as(client, "demo_employee")
     assert client.delete("/api/employees/7").status_code == 403
+
+
+# ---------------------------------------------------------------------------
+# Reporting hierarchy cycle prevention
+# ---------------------------------------------------------------------------
+
+def test_update_rejects_self_management(client):
+    _login_as(client, "demo_hr_admin")
+
+    response = client.put("/api/employees/5", json={"manager_id": 5})
+
+    assert response.status_code == 400, response.get_json()
+    assert "itself" in response.get_json()["message"]
+
+
+def test_update_rejects_direct_manager_cycle(client):
+    _login_as(client, "demo_hr_admin")
+
+    # Employee 5 reports to employee 4, so 4 -> 5 would close a two-node cycle.
+    response = client.put("/api/employees/4", json={"manager_id": 5})
+
+    assert response.status_code == 400, response.get_json()
+    assert "circular reporting" in response.get_json()["message"]
+
+
+def test_update_rejects_indirect_manager_cycle(client):
+    _login_as(client, "demo_hr_admin")
+
+    # Seed chain is 5 -> 4 -> 1, so 1 -> 5 would close a longer cycle.
+    response = client.put("/api/employees/1", json={"manager_id": 5})
+
+    assert response.status_code == 400, response.get_json()
+    assert "circular reporting" in response.get_json()["message"]
+
+
+def test_create_still_accepts_a_valid_manager(client):
+    _login_as(client, "demo_hr_admin")
+
+    response = client.post("/api/employees", json=_payload(manager_id=4))
+
+    assert response.status_code == 201, response.get_json()
+    assert response.get_json()["employee"]["manager_id"] == 4

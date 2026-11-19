@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salaries - Employee Management System</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">EMS</div>
+      <nav id="sidebar-nav"></nav>
+      <button type="button" id="logout-button" class="logout">Log out</button>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <span id="username"></span>
+        <span id="roles" class="roles"></span>
+      </header>
+      <main class="content">
+        <div id="message" class="message" hidden></div>
+        <h1>Salaries</h1>
+        <p class="subtitle">Confidential salary history visible to your role.</p>
+
+        <div class="toolbar salary-filters">
+          <input id="search" type="search" placeholder="Search employee" aria-label="Search employee">
+          <select id="employee-filter" aria-label="Filter by employee">
+            <option value="">All employees</option>
+          </select>
+          <input id="currency-filter" type="text" maxlength="3" placeholder="Currency" aria-label="Filter by currency">
+          <input id="active-on" type="date" aria-label="Active on date">
+          <button type="button" id="reset-filters" class="button">Reset</button>
+          <a id="create-link" class="button primary" href="/pages/salary-form.html">Add salary</a>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Code</th>
+                <th>Annual salary</th>
+                <th>Currency</th>
+                <th>Effective from</th>
+                <th>Effective to</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="salary-rows"></tbody>
+          </table>
+        </div>
+        <p id="empty" class="empty" hidden>No salary records found.</p>
+
+        <div class="pagination">
+          <button type="button" id="previous-page" class="button">Previous</button>
+          <span id="page-info" class="page-info"></span>
+          <button type="button" id="next-page" class="button">Next</button>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pages/salaries.js"></script>
+</body>
+</html>

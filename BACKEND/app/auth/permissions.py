@@ -37,6 +37,8 @@ PERMISSION_JML_READ = "jml:read"
 PERMISSION_JML_MANAGE = "jml:manage"
 PERMISSION_PROJECT_READ = "projects:read"
 PERMISSION_PROJECT_MANAGE = "projects:manage"
+PERMISSION_SKILLS_READ = "skills:read"
+PERMISSION_SKILLS_MANAGE = "skills:manage"
 PERMISSION_REPORT_READ = "reports:read"
 
 # Confidential salary data. Only Payroll Admin grants these permissions.
@@ -52,6 +54,7 @@ ROLE_PERMISSIONS = {
         PERMISSION_ORG_READ,
         PERMISSION_JML_READ,
         PERMISSION_PROJECT_READ,
+        PERMISSION_SKILLS_READ,
         PERMISSION_REPORT_READ,
     }),
     # Employee lifecycle and HR operations; salary requires an extra grant.
@@ -63,6 +66,8 @@ ROLE_PERMISSIONS = {
         PERMISSION_ORG_READ,
         PERMISSION_JML_MANAGE,
         PERMISSION_PROJECT_READ,
+        PERMISSION_PROJECT_MANAGE,
+        PERMISSION_SKILLS_MANAGE,
         PERMISSION_REPORT_READ,
     }),
     # Limited HR work. Assigned-scope is not implemented yet, so record scope
@@ -72,6 +77,7 @@ ROLE_PERMISSIONS = {
         PERMISSION_EMPLOYEE_UPDATE_LIMITED,
         PERMISSION_ORG_READ,
         PERMISSION_JML_READ,
+        PERMISSION_SKILLS_READ,
     }),
     # Full reporting subtree, never salary or user/role administration.
     ROLE_DEPARTMENT_MANAGER: frozenset({
@@ -80,9 +86,12 @@ ROLE_PERMISSIONS = {
         PERMISSION_ORG_READ,
         PERMISSION_JML_READ,
         PERMISSION_PROJECT_READ,
+        PERMISSION_SKILLS_READ,
     }),
-    # Project database scope is deferred; these are permissions only.
+    # Project management needs an org-wide active-employee picker. This grant
+    # is used only by project endpoints; shared employee_scope() is unchanged.
     ROLE_PROJECT_MANAGER: frozenset({
+        PERMISSION_EMPLOYEE_READ_ALL,
         PERMISSION_PROJECT_READ,
         PERMISSION_PROJECT_MANAGE,
         PERMISSION_ORG_READ,
@@ -92,6 +101,7 @@ ROLE_PERMISSIONS = {
         PERMISSION_EMPLOYEE_READ_SCOPE,
         PERMISSION_EMPLOYEE_SELF_UPDATE,
         PERMISSION_ORG_READ,
+        PERMISSION_SKILLS_READ,
     }),
     # Technical user/role administration only; no business data by default.
     ROLE_SYSTEM_ADMIN: frozenset({
